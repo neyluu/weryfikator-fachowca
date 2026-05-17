@@ -5,6 +5,7 @@ const Layout = ({ children }) => {
         <a href="/">WeryfikatorFachowca</a>
 
         <nav className="flex items-center gap-4">
+          <a href="/dashboard">Dashboard</a>
           <a href="/auth/login">Login</a>
           <a href="/auth/register">Register</a>
         </nav>

@@ -10,11 +10,13 @@ services:
     depends_on:
       - frontend
       - backend
+    restart: on-failure
 
   backend:
     dns:
       - 8.8.8.8
     build: ./backend
+    command: sh -c "chmod +x mvnw && ./mvnw spring-boot:run"
     container_name: wf-backend
     volumes:
       - ./backend:/app
@@ -27,6 +29,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: on-failure
 
   db:
     image: postgres:16
@@ -59,6 +62,7 @@ services:
       CHOKIDAR_USEPOLLING: "true"
     depends_on:
       - backend
+    restart: on-failure
 
 volumes:
   wf_postgres_data:

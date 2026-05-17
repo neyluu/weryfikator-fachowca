@@ -32,12 +32,6 @@ function Register() {
         body: JSON.stringify(form),
       });
 
-      console.log(response.status);
-
-      const text = await response.text();
-
-      console.log(text);
-
       const data = await response.json();
 
       if (!response.ok) {
@@ -58,7 +52,7 @@ function Register() {
     <div className="min-h-screen flex items-center justify-center bg-white text-black">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm border border-black p-8 flex flex-col gap-4"
+        className="w-full max-w-sm p-8 flex flex-col gap-4"
       >
         <h1 className="text-2xl font-bold text-center">Register</h1>
 
