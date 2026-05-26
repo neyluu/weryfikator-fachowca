@@ -91,6 +91,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        saveToken,
         isAuthenticated: !!user,
       }}
     >

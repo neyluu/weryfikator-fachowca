@@ -14,6 +14,7 @@ import Specialists from "./pages/Specialists";
 import NotFound from "./pages/NotFound";
 import Account from "./pages/Account";
 import Activity from "./pages/Activity";
+import GuestRoute from "./GuestRoute";
 import { AuthProvider } from "./context/AuthContext";
 
 function App() {
@@ -24,8 +25,22 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/specialists" element={<Specialists />} />
-            <Route path="/auth/login" element={<Login />} />
-            <Route path="/auth/register" element={<Register />} />
+            <Route
+              path="/auth/login"
+              element={
+                <GuestRoute>
+                  <Login />
+                </GuestRoute>
+              }
+            />
+            <Route
+              path="/auth/register"
+              element={
+                <GuestRoute>
+                  <Register />
+                </GuestRoute>
+              }
+            />
             <Route path="/dashboard" element={<Dashboard />}>
               <Route index element={<Navigate to="account" replace />} />
 
