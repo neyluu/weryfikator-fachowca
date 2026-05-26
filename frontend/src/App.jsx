@@ -16,6 +16,7 @@ import Account from "./pages/Account";
 import Activity from "./pages/Activity";
 import GuestRoute from "./GuestRoute";
 import { AuthProvider } from "./context/AuthContext";
+import Profile from "./pages/Profile.jsx";
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
 
               <Route path="account" element={<Account />} />
               <Route path="activity" element={<Activity />} />
+              <Route path="profile" element={<Profile />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

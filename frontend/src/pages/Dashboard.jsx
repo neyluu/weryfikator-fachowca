@@ -66,6 +66,21 @@ export default function DashboardLayout() {
           >
             Aktywność
           </NavLink>
+
+          {isSpecialist && (
+              <NavLink
+                  to="/dashboard/profile"
+                  className={({ isActive }) =>
+                      `text-sm text-left px-2 py-1 rounded-lg ${
+                          isActive
+                              ? "bg-neutral-800 text-neutral-200"
+                              : "text-neutral-400 hover:bg-neutral-800"
+                      }`
+                  }
+              >
+                Profil
+              </NavLink>
+          )}
         </div>
 
         <div className="flex flex-col mt-auto gap-2">
