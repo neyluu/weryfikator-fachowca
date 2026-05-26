@@ -1,5 +1,6 @@
 package org.example.backend.config;
 
+import org.example.backend.util.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -8,10 +9,17 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final JwtUtil jwtUtil;
+
+    public SecurityConfig(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -23,8 +31,16 @@ public class SecurityConfig {
                 auth
                     .requestMatchers("/auth/**")
                     .permitAll()
+                    .requestMatchers("/admin/**")
+                    .hasRole("ADMIN")
+                    .requestMatchers("/specialist/**")
+                    .hasAnyRole("ADMIN", "SPECIALIST")
                     .anyRequest()
                     .authenticated()
+            )
+            .addFilterBefore(
+                new JwtAuthFilter(jwtUtil),
+                UsernamePasswordAuthenticationFilter.class
             );
         return http.build();
     }
