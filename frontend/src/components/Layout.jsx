@@ -8,7 +8,9 @@ const Layout = ({ children }) => {
 
   const specialRoutes = ["/dashboard", "/auth/login", "/auth/register"];
 
-  const isFooterHidden = specialRoutes.includes(location.pathname);
+  const isFooterHidden =
+    specialRoutes.includes(location.pathname) ||
+    location.pathname.startsWith("/dashboard");
   const isAuthRoute = location.pathname.startsWith("/auth");
 
   return (
@@ -16,7 +18,7 @@ const Layout = ({ children }) => {
       <div className="w-full flex flex-row items-center justify-center">
         <nav className="w-full max-w-5xl flex flex-row items-center justify-between px-4 py-2">
           <a
-            href={`${location.pathname === "/dashboard" ? "/dashboard" : "/"}`}
+            href={`${location.pathname.startsWith("/dashboard") ? "/dashboard" : "/"}`}
           >
             <img
               src="/WeryfikatorFachowca_Logo.svg"
