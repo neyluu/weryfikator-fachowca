@@ -4,11 +4,12 @@ import Button from "./ui/Button";
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const specialRoutes = ["/dashboard", "/auth/login", "/auth/register"];
 
   const isFooterHidden = specialRoutes.includes(location.pathname);
+  const isAuthRoute = location.pathname.startsWith("/auth");
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -26,6 +27,11 @@ const Layout = ({ children }) => {
           </a>
 
           <div className="flex items-center gap-5">
+            {user && (
+              <Button look="secondary" onClick={logout} size="sm">
+                Wyloguj się
+              </Button>
+            )}
             {!user && (
               <>
                 <a href="/auth/register">Zarejestruj się za darmo</a>
@@ -39,7 +45,7 @@ const Layout = ({ children }) => {
 
       <div className="flex-1 w-full flex flex-row justify-center">
         <main
-          className={`w-full max-w-5xl flex px-4 ${isFooterHidden ? "items-center justify-center" : ""}`}
+          className={`w-full max-w-5xl flex px-4 ${isAuthRoute ? "items-center justify-center" : ""}`}
         >
           {children}
         </main>
