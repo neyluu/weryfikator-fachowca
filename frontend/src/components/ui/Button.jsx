@@ -21,7 +21,7 @@ const lookClasses = {
 
 const baseClasses = [
   "inline-flex items-center justify-center gap-2",
-  "rounded-4xl",
+  "rounded-full",
   "transition-all duration-150 ease-out",
   "cursor-pointer select-none",
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",

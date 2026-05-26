@@ -11,7 +11,7 @@ const baseClasses = [
   "min-w-40 w-full",
   "border border-neutral-700",
   "bg-neutral-900 text-neutral-100",
-  "rounded-4xl",
+  "rounded-full",
   "transition-all duration-150 ease-out",
   "outline-none",
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
