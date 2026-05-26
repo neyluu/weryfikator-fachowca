@@ -1,103 +1,119 @@
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import usePageTitle from "../util/pageTitle";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import { User, HardHat } from "lucide-react";
+
+const ROLES = [
+  {
+    value: "USER",
+    label: "Użytkownik",
+    description: "Chcę znaleźć sprawdzonego specjalistę",
+    icon: User,
+  },
+  {
+    value: "SPECIALIST",
+    label: "Specjalista",
+    description: "Chcę budować reputację w oparciu o moje kompetencje",
+    icon: HardHat,
+  },
+];
 
 function Register() {
+  usePageTitle("Weryfikator Fachowca - Rejestracja");
+  const { register } = useAuth();
   const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
+    role: "USER",
   });
-
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    setMessage("");
     setError("");
-
+    if (!form.username || !form.email || !form.password) {
+      setError("Wszystkie pola są wymagane");
+      return;
+    }
+    if (form.password.length < 8) {
+      setError("Hasło musi zawierać co najmniej 8 znaków");
+      return;
+    }
+    setLoading(true);
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || "Registration failed");
-        return;
-      }
-
-      localStorage.setItem("token", data.token);
-
-      setMessage("Account created successfully!");
+      await register(form.username, form.email, form.password, form.role);
     } catch (error) {
-      setError("Server error");
-      console.error(error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white text-black">
+    <div className="flex items-center justify-center">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm p-8 flex flex-col gap-4"
+        className="w-full max-w-sm p-4 flex flex-col gap-4 bg-neutral-800/25 rounded-3xl"
       >
-        <h1 className="text-2xl font-bold text-center">Register</h1>
-
-        <input
+        <h1 className="text-xl font-medium text-center">Rejestracja</h1>
+        <Input
           type="text"
           name="username"
-          placeholder="Username"
+          placeholder="Nazwa użytkownika"
           value={form.username}
           onChange={handleChange}
-          className="border border-black px-4 py-2 outline-none"
         />
-
-        <input
+        <Input
           type="email"
           name="email"
           placeholder="Email"
           value={form.email}
           onChange={handleChange}
-          className="border border-black px-4 py-2 outline-none"
         />
-
-        <input
+        <Input
           type="password"
           name="password"
-          placeholder="Password"
+          placeholder="Hasło"
           value={form.password}
           onChange={handleChange}
-          className="border border-black px-4 py-2 outline-none"
         />
-
-        <button
-          type="submit"
-          className="bg-black text-white py-2 hover:opacity-90 transition"
-        >
-          Register
-        </button>
-
-        {message && (
-          <p className="text-sm text-center border border-black p-2">
-            {message}
-          </p>
-        )}
-
+        <div className="flex flex-row gap-2">
+          {ROLES.map(({ value, label, description, icon: Icon }) => {
+            const selected = form.role === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setForm({ ...form, role: value })}
+                className={[
+                  "flex-1 flex flex-col items-center gap-1 p-3 rounded-2xl border border-neutral-300 transition-all duration-150 ease-out cursor-pointer text-center",
+                  selected
+                    ? "bg-brand text-neutral-100"
+                    : "bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500 hover:text-neutral-300",
+                ].join(" ")}
+              >
+                <Icon className="w-6 h-6" />
+                <span className="text-sm font-medium">{label}</span>
+                <span className="text-xs leading-tight">{description}</span>
+              </button>
+            );
+          })}
+        </div>
+        <Button type="submit" disabled={loading} className="w-full">
+          {loading ? "Tworzenie konta..." : "Utwórz konto"}
+        </Button>
         {error && (
-          <p className="text-sm text-center border border-black p-2">{error}</p>
+          <p className="text-sm text-center text-neutral-400 max-w-fit border-t border-t-neutral-800/75 pt-2">
+            {error}
+          </p>
         )}
       </form>
     </div>

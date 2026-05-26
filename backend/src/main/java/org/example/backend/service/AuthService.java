@@ -2,6 +2,7 @@ package org.example.backend.service;
 
 import org.example.backend.dto.request.*;
 import org.example.backend.dto.response.*;
+import org.example.backend.entity.Role;
 import org.example.backend.entity.User;
 import org.example.backend.repository.UserRepository;
 import org.example.backend.util.JwtUtil;
@@ -28,33 +29,50 @@ public class AuthService {
     public AuthResponse register(RegisterRequest req) {
         if (
             userRepository.existsByUsername(req.username())
-        ) throw new IllegalArgumentException("Username is taken already");
+        ) throw new IllegalArgumentException("Nazwa użytkownika już istnieje");
         if (
             userRepository.existsByEmail(req.email())
-        ) throw new IllegalArgumentException("Mail is taken already");
+        ) throw new IllegalArgumentException("Email już istnieje");
 
         User user = new User();
         user.setUsername(req.username());
         user.setEmail(req.email());
         user.setPasswordHash(passwordEncoder.encode(req.password()));
+        user.setRole(req.role() != null ? req.role() : Role.USER);
         userRepository.save(user);
 
-        String token = jwtUtil.generateToken(user.getUsername());
-        return new AuthResponse(token, user.getUsername(), user.getEmail());
+        String token = jwtUtil.generateToken(
+            user.getEmail(),
+            user.getRole().name()
+        );
+        return new AuthResponse(
+            token,
+            user.getUsername(),
+            user.getEmail(),
+            user.getRole().name()
+        );
     }
 
     public AuthResponse login(LoginRequest req) {
         User user = userRepository
-            .findByUsername(req.username())
+            .findByEmail(req.email())
             .orElseThrow(() ->
-                new IllegalArgumentException("Incorrect credentials")
+                new IllegalArgumentException("Nieprawidłowe dane")
             );
 
         if (
             !passwordEncoder.matches(req.password(), user.getPasswordHash())
-        ) throw new IllegalArgumentException("Incorrect credentials");
+        ) throw new IllegalArgumentException("Nieprawidłowe dane");
 
-        String token = jwtUtil.generateToken(user.getUsername());
-        return new AuthResponse(token, user.getUsername(), user.getEmail());
+        String token = jwtUtil.generateToken(
+            user.getEmail(),
+            user.getRole().name()
+        );
+        return new AuthResponse(
+            token,
+            user.getUsername(),
+            user.getEmail(),
+            user.getRole().name()
+        );
     }
 }

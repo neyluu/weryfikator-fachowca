@@ -1,57 +1,70 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import usePageTitle from "../util/pageTitle";
+import Button from "../components/ui/Button";
+import { User, Mail, Shield, Clock } from "lucide-react";
 
-function parseJwt(token) {
-  try {
-    return JSON.parse(atob(token.split(".")[1]));
-  } catch {
-    return null;
-  }
-}
+const FIELD_CONFIG = {
+  sub: { label: "Email", icon: Mail },
+  role: { label: "Rola", icon: Shield },
+  iat: {
+    label: "Zalogowano",
+    icon: Clock,
+    format: (v) => new Date(v * 1000).toLocaleString("pl-PL"),
+  },
+  exp: {
+    label: "Wygasa",
+    icon: Clock,
+    format: (v) => new Date(v * 1000).toLocaleString("pl-PL"),
+  },
+};
 
 export default function Dashboard() {
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+  usePageTitle("Weryfikator Fachowca - Konto");
+  const { user, logout, loading } = useAuth();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/auth/login");
-      return;
-    }
-    const payload = parseJwt(token);
-    if (!payload) {
-      navigate("/auth/login");
-      return;
-    }
-    setUser(payload);
-  }, [navigate]);
+  console.log(user);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
-
-  if (!user) return null;
+  if (loading || !user) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white text-black">
-      <div className="w-full max-w-sm p-8 flex flex-col gap-4">
-        <h1 className="text-2xl font-bold text-center">Dashboard</h1>
-        <div className="flex flex-col gap-2 p-4">
-          {Object.entries(user).map(([key, value]) => (
-            <div key={key} className="flex justify-between text-sm">
-              <span className="font-semibold">{key}</span>
-              <span>{String(value)}</span>
-            </div>
-          ))}
+    <div className="flex items-center justify-center">
+      <div className="w-full max-w-sm flex flex-col gap-4">
+        <div className="flex flex-col items-center gap-2 p-6 bg-neutral-800/25 rounded-3xl">
+          <div className="w-16 h-16 rounded-full bg-brand/10 border border-neutral-700 flex items-center justify-center">
+            <User className="w-8 h-8 text-neutral-700" />
+          </div>
+          <h1 className="text-xl font-medium">{user.sub}</h1>
+          <span className="text-xs text-neutral-500 bg-neutral-800 px-3 py-1 rounded-full">
+            {user.role}
+          </span>
         </div>
-        <button
-          onClick={handleLogout}
-          className="bg-black text-white py-2 hover:opacity-90 transition"
-        >
-          Logout
-        </button>
+
+        <div className="flex flex-col gap-2 p-4 bg-neutral-800/25 rounded-3xl">
+          {Object.entries(user).map(([key, value]) => {
+            const config = FIELD_CONFIG[key];
+            if (!config) return null;
+            const Icon = config.icon;
+            const display = config.format
+              ? config.format(value)
+              : String(value);
+            return (
+              <div
+                key={key}
+                className="flex items-center justify-between gap-4 py-1"
+              >
+                <div className="flex items-center gap-2 text-neutral-500 text-sm">
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span>{config.label}</span>
+                </div>
+                <span className="text-sm text-neutral-300">{display}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <Button look="secondary" onClick={logout} className="w-full">
+          Wyloguj się
+        </Button>
       </div>
     </div>
   );

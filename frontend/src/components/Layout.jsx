@@ -1,23 +1,57 @@
+import { useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import Button from "./ui/Button";
+
 const Layout = ({ children }) => {
+  const location = useLocation();
+  const { user } = useAuth();
+
+  const specialRoutes = ["/dashboard", "/auth/login", "/auth/register"];
+
+  const isFooterHidden = specialRoutes.includes(location.pathname);
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="flex items-center justify-between bg-primary text-secondary px-8 py-4">
-        <a href="/">WeryfikatorFachowca</a>
+    <div className="min-h-screen flex flex-col">
+      <div className="w-full flex flex-row items-center justify-center">
+        <nav className="w-full max-w-5xl flex flex-row items-center justify-between px-4 py-2">
+          <a
+            href={`${location.pathname === "/dashboard" ? "/dashboard" : "/"}`}
+          >
+            <img
+              src="/WeryfikatorFachowca_Logo.svg"
+              alt="Weryfikator Fachowca"
+              className="w-10 h-10"
+              draggable="false"
+            />
+          </a>
 
-        <nav className="flex items-center gap-4">
-          <a href="/dashboard">Dashboard</a>
-          <a href="/auth/login">Login</a>
-          <a href="/auth/register">Register</a>
+          <div className="flex items-center gap-5">
+            {!user && (
+              <>
+                <a href="/auth/register">Zarejestruj się za darmo</a>
+                <a href="/auth/login">Zaloguj się</a>
+                <Button href="/specialists">Dla fachowców</Button>
+              </>
+            )}
+          </div>
         </nav>
-      </header>
+      </div>
 
-      <main className="flex-1 flex flex-col items-center justify-center p-8">
-        {children}
-      </main>
+      <div className="flex-1 w-full flex flex-row justify-center">
+        <main
+          className={`w-full max-w-5xl flex px-4 ${isFooterHidden ? "items-center justify-center" : ""}`}
+        >
+          {children}
+        </main>
+      </div>
 
-      <footer className="bg-primary text-secondary text-center px-8 py-4">
-        <p>WeryfikatorFachowca &copy;2026</p>
-      </footer>
+      {!isFooterHidden && (
+        <div className="w-full flex flex-row justify-center">
+          <footer className="w-full max-w-5xl flex items-center px-4">
+            PK 2026
+          </footer>
+        </div>
+      )}
     </div>
   );
 };
