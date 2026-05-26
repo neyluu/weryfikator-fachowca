@@ -5,45 +5,45 @@ const sizeClasses = {
 };
 
 const baseClasses = [
+  "w-full",
   "border border-neutral-700",
   "bg-neutral-900 text-neutral-100",
   "placeholder:text-neutral-500",
-  "rounded-full",
+  "rounded-3xl",
   "transition-all duration-150 ease-out",
   "outline-none",
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
   "disabled:opacity-40 disabled:pointer-events-none",
+  "resize-none",
 ].join(" ");
 
-export function Input({
+export function Textarea({
   size = "md",
   className = "",
-  type = "text",
   name,
   value,
   onChange,
   placeholder,
   disabled = false,
   required = false,
-  autoComplete,
+  rows = 4,
 }) {
   const classes = [baseClasses, sizeClasses[size], className]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <input
-      type={type}
+    <textarea
       name={name}
       value={value}
       onChange={onChange}
       placeholder={placeholder}
       disabled={disabled}
       required={required}
-      autoComplete={autoComplete}
+      rows={rows}
       className={classes}
     />
   );
 }
 
-export default Input;
+export default Textarea;

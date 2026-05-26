@@ -35,7 +35,7 @@ export default function DashboardLayout() {
   if (loading || !user) return null;
 
   return (
-    <div className="flex py-5">
+    <div className="flex py-5 w-full">
       {/* SIDEBAR */}
       <div className="border-r border-neutral-800/25 bg-neutral-900/40 pr-5 flex flex-col gap-5">
         <div className="flex flex-col gap-1 mt-4">
