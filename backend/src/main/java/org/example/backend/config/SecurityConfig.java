@@ -29,11 +29,11 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth ->
                 auth
-                    .requestMatchers("/api/auth/**")
+                    .requestMatchers("/auth/**")
                     .permitAll()
-                    .requestMatchers("/api/admin/**")
+                    .requestMatchers("/admin/**")
                     .hasRole("ADMIN")
-                    .requestMatchers("/api/specialist/**")
+                    .requestMatchers("/specialist/**")
                     .hasAnyRole("ADMIN", "SPECIALIST")
                     .anyRequest()
                     .authenticated()

@@ -67,7 +67,7 @@ function Login() {
           {loading ? "Logowanie..." : "Zaloguj się"}
         </Button>
         {error && (
-          <p className="text-sm text-center text-neutral-400 max-w-fit border-t border-t-neutral-800/75 pt-2">
+          <p className="text-sm text-center text-neutral-400 border-t border-t-neutral-800/75 pt-2">
             {error}
           </p>
         )}

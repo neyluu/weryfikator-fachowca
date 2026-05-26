@@ -1,7 +1,7 @@
 package org.example.backend.service;
 
 import org.example.backend.dto.request.*;
-import org.example.backend.dto.response.*;
+import org.example.backend.dto.response.AuthResponse;
 import org.example.backend.entity.Role;
 import org.example.backend.entity.User;
 import org.example.backend.repository.UserRepository;
