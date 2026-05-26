@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import usePageTitle from "../util/pageTitle";
 import Button from "../components/ui/Button";
@@ -23,14 +24,26 @@ const ROLES = [
 function Register() {
   usePageTitle("Weryfikator Fachowca - Rejestracja");
   const { register } = useAuth();
+  const location = useLocation();
+
   const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
     role: "USER",
   });
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const role = params.get("role");
+
+    if (role === "specialist") {
+      setForm((prev) => ({ ...prev, role: "SPECIALIST" }));
+    }
+  }, [location.search]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -64,6 +77,7 @@ function Register() {
         className="w-full max-w-sm p-4 flex flex-col gap-4 bg-neutral-800/25 rounded-3xl"
       >
         <h1 className="text-xl font-medium text-center">Rejestracja</h1>
+
         <Input
           type="text"
           name="username"
@@ -71,6 +85,7 @@ function Register() {
           value={form.username}
           onChange={handleChange}
         />
+
         <Input
           type="email"
           name="email"
@@ -78,6 +93,7 @@ function Register() {
           value={form.email}
           onChange={handleChange}
         />
+
         <Input
           type="password"
           name="password"
@@ -85,6 +101,7 @@ function Register() {
           value={form.password}
           onChange={handleChange}
         />
+
         <div className="flex flex-row gap-2">
           {ROLES.map(({ value, label, description, icon: Icon }) => {
             const selected = form.role === value;
@@ -107,9 +124,11 @@ function Register() {
             );
           })}
         </div>
+
         <Button type="submit" disabled={loading} className="w-full">
           {loading ? "Tworzenie konta..." : "Utwórz konto"}
         </Button>
+
         {error && (
           <p className="text-sm text-center text-neutral-400 max-w-fit border-t border-t-neutral-800/75 pt-2">
             {error}

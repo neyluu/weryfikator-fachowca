@@ -1,5 +1,5 @@
 const baseClasses =
-  "w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs text-neutral-200";
+  "w-8 h-8 rounded-full bg-neutral-800/25 flex items-center justify-center text-xs text-neutral-200";
 
 export function Avatar({ name, className = "" }) {
   const classes = [baseClasses, className].filter(Boolean).join(" ");
