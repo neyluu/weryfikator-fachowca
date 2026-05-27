@@ -12,6 +12,10 @@ function Profile() {
 
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+
+  console.log(user)
+
+  const [userData, setUserData] = useState({});
   const isSpecialist = user?.role === "SPECIALIST";
   const [profileCreation, setProfileCreation] = useState(() => {
     const saved = localStorage.getItem("profileCreation");
@@ -333,6 +337,33 @@ function Profile() {
       navigate("/dashboard", { replace: true });
     }
   }, [loading, user, isSpecialist, navigate]);
+
+  useEffect(() => {
+    async function fetchUserData() {
+      const token = localStorage.getItem("token");
+
+      console.log(token)
+
+      const res = await fetch("/api/me/get", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if(!res.ok) {
+        // TODO - probably should display some error or sth
+        console.log("Failed to load user data")
+        return;
+      }
+
+      const data = await res.json()
+      setUserData(data)
+    }
+
+    fetchUserData();
+  }, []);
 
   if (loading || !user || !isSpecialist) return null;
 
