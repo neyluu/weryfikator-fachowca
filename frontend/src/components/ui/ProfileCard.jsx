@@ -20,9 +20,9 @@ function ProfileCard({ data }) {
         <div className="flex gap-4 justify-between">
           <div className="flex gap-4 items-start">
             <img
-              src="/icons/profileIcon.png"
+              src="/icons/profileIcon.svg"
               alt="Profil"
-              className="w-24 h-24 border border-neutral-600 rounded-2xl p-2 bg-neutral-800 object-cover"
+              className="w-32 h-32 border border-neutral-600 rounded-2xl bg-neutral-900 object-cover"
               draggable="false"
             />
 
