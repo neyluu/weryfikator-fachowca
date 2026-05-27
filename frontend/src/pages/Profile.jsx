@@ -33,6 +33,7 @@ function Profile() {
     hourStart: 0,
     hourEnd: 0,
     days: [],
+    categories: [],
   });
 
   const DAYS = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd"];
@@ -67,6 +68,17 @@ function Profile() {
         ? prev.days.filter((d) => d !== day)
         : [...prev.days, day],
     }));
+  };
+
+  const toggleCategory = (category) => {
+    setFormData((prev) => {
+      return {
+        ...prev,
+        categories: prev.categories.includes(category)
+          ? prev.categories.filter((c) => c !== category)
+          : [...prev.categories, category],
+      };
+    });
   };
 
   const handleAddPhotos = (e) => {
@@ -196,6 +208,54 @@ function Profile() {
                 setFormData({ ...formData, description: e.target.value })
               }
             />
+
+            <div className="text-gray-600 flex flex-col gap-3">
+              <p>Kategorie</p>
+
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2 pb-3">
+                {[
+                  { key: "masonry", label: "Murarstwo" },
+                  { key: "plastering", label: "Tynkowanie" },
+                  { key: "tiling", label: "Glazurnictwo" },
+                  { key: "roofing", label: "Dekarstwo" },
+                  { key: "electrical", label: "Elektryka" },
+                  { key: "plumbing", label: "Hydraulika" },
+                  { key: "carpentry", label: "Stolarstwo" },
+                  { key: "mechanics", label: "Mechanika" },
+                  { key: "painting", label: "Lakiernictwo" },
+                  { key: "tire_service", label: "Wulkanizacja" },
+                  { key: "it", label: "Informatyka" },
+                  { key: "graphicDesign", label: "Grafika" },
+                  { key: "photography", label: "Fotografia" },
+                  { key: "accounting", label: "Księgowość" },
+                  { key: "law", label: "Prawo" },
+                  { key: "medicine", label: "Medycyna" },
+                  { key: "physiotherapy", label: "Fizjoterapia" },
+                  { key: "cosmetology", label: "Kosmetologia" },
+                  { key: "hairdressing", label: "Fryzjerstwo" },
+                  { key: "dietetics", label: "Dietetyka" },
+                  { key: "gastronomy", label: "Gastronomia" },
+                  { key: "gardening", label: "Ogrodnictwo" },
+                ].map(({ key, label }) => {
+                  const active = formData.categories.includes(key);
+
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => toggleCategory(key)}
+                      className={`
+                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm ${
+                          active
+                            ? "bg-brand text-neutral-100 border-brand"
+                            : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"
+                        }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             <Input
               type="text"
