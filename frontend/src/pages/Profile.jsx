@@ -13,8 +13,6 @@ function Profile() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
 
-  console.log(user)
-
   const [userData, setUserData] = useState({});
   const isSpecialist = user?.role === "SPECIALIST";
   const [profileCreation, setProfileCreation] = useState(() => {
@@ -705,7 +703,7 @@ function Profile() {
             onClick={() => setIsProfilePreviewModalOpen(false)}
           />
 
-          <div className="relative bg-neutral-900 border border-neutral-700 rounded-2xl p-3 w-[90%] max-w-xl shadow-xl flex flex-col gap-6">
+          <div className="relative bg-neutral-900 border border-neutral-700 rounded-2xl p-3 w-[75vw] shadow-xl flex flex-col gap-6 max-h-[90vh] overflow-y-scroll">
             <div className="flex justify-between items-center">
               <h2 className="text-lg text-black">Podgląd profilu</h2>
 
@@ -717,7 +715,10 @@ function Profile() {
               </button>
             </div>
 
-            <ProfileCard data={formData} />
+            <ProfileCard data={{
+              profile: formData,
+              user: userData
+            }} />
           </div>
         </div>
       )}
