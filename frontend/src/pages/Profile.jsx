@@ -36,12 +36,46 @@ function Profile() {
     categories: [],
   });
 
-  const DAYS = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd"];
+  const DAYS = [
+    { key: "monday", label: "Pon" },
+    { key: "tuesday", label: "Wt" },
+    { key: "wednesday", label: "Śr" },
+    { key: "thursday", label: "Czw" },
+    { key: "friday", label: "Pt" },
+    { key: "saturday", label: "Sob" },
+    { key: "sunday", label: "Nd" },
+  ];
+
   const PRICE_LIMITS = {
     consultation: { min: 0, max: 10000 },
     hourly: { min: 0, max: 25000 },
     project: { min: 0, max: 100000 },
   };
+
+  const CATEGORIES = [
+    { key: "masonry", label: "Murarstwo" },
+    { key: "plastering", label: "Tynkowanie" },
+    { key: "tiling", label: "Glazurnictwo" },
+    { key: "roofing", label: "Dekarstwo" },
+    { key: "electrical", label: "Elektryka" },
+    { key: "plumbing", label: "Hydraulika" },
+    { key: "carpentry", label: "Stolarstwo" },
+    { key: "mechanics", label: "Mechanika" },
+    { key: "painting", label: "Lakiernictwo" },
+    { key: "tire_service", label: "Wulkanizacja" },
+    { key: "it", label: "Informatyka" },
+    { key: "graphicDesign", label: "Grafika" },
+    { key: "photography", label: "Fotografia" },
+    { key: "accounting", label: "Księgowość" },
+    { key: "law", label: "Prawo" },
+    { key: "medicine", label: "Medycyna" },
+    { key: "physiotherapy", label: "Fizjoterapia" },
+    { key: "cosmetology", label: "Kosmetologia" },
+    { key: "hairdressing", label: "Fryzjerstwo" },
+    { key: "dietetics", label: "Dietetyka" },
+    { key: "gastronomy", label: "Gastronomia" },
+    { key: "gardening", label: "Ogrodnictwo" },
+  ]
 
   const [priceTypes, setPriceTypes] = useState({
     consultation: {
@@ -213,34 +247,12 @@ function Profile() {
               <p>Kategorie</p>
 
               <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2 pb-3">
-                {[
-                  { key: "masonry", label: "Murarstwo" },
-                  { key: "plastering", label: "Tynkowanie" },
-                  { key: "tiling", label: "Glazurnictwo" },
-                  { key: "roofing", label: "Dekarstwo" },
-                  { key: "electrical", label: "Elektryka" },
-                  { key: "plumbing", label: "Hydraulika" },
-                  { key: "carpentry", label: "Stolarstwo" },
-                  { key: "mechanics", label: "Mechanika" },
-                  { key: "painting", label: "Lakiernictwo" },
-                  { key: "tire_service", label: "Wulkanizacja" },
-                  { key: "it", label: "Informatyka" },
-                  { key: "graphicDesign", label: "Grafika" },
-                  { key: "photography", label: "Fotografia" },
-                  { key: "accounting", label: "Księgowość" },
-                  { key: "law", label: "Prawo" },
-                  { key: "medicine", label: "Medycyna" },
-                  { key: "physiotherapy", label: "Fizjoterapia" },
-                  { key: "cosmetology", label: "Kosmetologia" },
-                  { key: "hairdressing", label: "Fryzjerstwo" },
-                  { key: "dietetics", label: "Dietetyka" },
-                  { key: "gastronomy", label: "Gastronomia" },
-                  { key: "gardening", label: "Ogrodnictwo" },
-                ].map(({ key, label }) => {
+                {CATEGORIES.map(({ key, label }) => {
                   const active = formData.categories.includes(key);
 
                   return (
                     <button
+                      type="button"
                       key={key}
                       onClick={() => toggleCategory(key)}
                       className={`
@@ -500,14 +512,14 @@ function Profile() {
               </label>
 
               <div className="flex flex-wrap gap-2 w-full">
-                {DAYS.map((day) => {
-                  const active = formData.days.includes(day);
+                {DAYS.map(({key, label}) => {
+                  const active = formData.days.includes(key);
 
                   return (
                     <button
-                      key={day}
+                      key={key}
                       type="button"
-                      onClick={() => toggleDay(day)}
+                      onClick={() => toggleDay(key)}
                       className={`
                         flex-1 px-4 py-2 rounded-xl border transition-all text-sm ${
                           active
@@ -515,7 +527,7 @@ function Profile() {
                             : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"
                         }`}
                     >
-                      {day}
+                      {label}
                     </button>
                   );
                 })}
