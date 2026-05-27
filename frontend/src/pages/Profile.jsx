@@ -12,17 +12,34 @@ function Profile() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const isSpecialist = user?.role === "SPECIALIST";
+  const [profileCreation, setProfileCreation] = useState(() => {
+    const saved = localStorage.getItem("profileCreation");
+    return saved ? JSON.parse(saved) : false;
+  });
 
-  const [profileCreation, setProfileCreation] = useState(false);
+  const [formData, setFormData] = useState({
+    specialization: "",
+    description: "",
+    experience: "",
+    localization: "",
+    phoneNumber: "",
+    email: "",
+    prices: {
+      consultation: { enabled: false, value: 0 },
+      hourly: { enabled: false, value: 0 },
+      project: { enabled: false, value: 0 },
+    },
+    images: [],
+    hourStart: 0,
+    hourEnd: 0,
+    days: [],
+  });
 
-  const days = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd"];
-  const [selectedDays, setSelectedDays] = useState([]);
-  const [photos, setPhotos] = useState([]);
-
+  const DAYS = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd"];
   const PRICE_LIMITS = {
     consultation: { min: 0, max: 10000 },
     hourly: { min: 0, max: 25000 },
-    project: { min: 0, max: 1000000 },
+    project: { min: 0, max: 100000 },
   };
 
   const [priceTypes, setPriceTypes] = useState({
@@ -44,25 +61,36 @@ function Profile() {
   });
 
   const toggleDay = (day) => {
-    setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
-    );
+    setFormData((prev) => ({
+      ...prev,
+      days: prev.days.includes(day)
+        ? prev.days.filter((d) => d !== day)
+        : [...prev.days, day],
+    }));
   };
 
   const handleAddPhotos = (e) => {
-    const files = Array.from(e.target.files);
+    const chosenFiles = Array.from(e.target.files);
 
-    const mapped = files.map((file) => ({
-      file,
-      url: URL.createObjectURL(file),
+    const newPhotos = chosenFiles.map((file) => ({
       id: crypto.randomUUID(),
+      file: file,
+      url: URL.createObjectURL(file),
     }));
 
-    setPhotos((prev) => [...prev, ...mapped]);
+    setFormData((prev) => ({
+      ...prev,
+      images: [...prev.images, ...newPhotos],
+    }));
   };
 
-  const removePhoto = (id) => {
-    setPhotos((prev) => prev.filter((p) => p.id !== id));
+  const removePhoto = (idToRemove) => {
+    setFormData((prev) => {
+      return {
+        ...prev,
+        images: prev.images.filter((photo) => photo.id !== idToRemove),
+      };
+    });
   };
 
   const updatePrice = (key, field, value) => {
@@ -85,7 +113,7 @@ function Profile() {
         }
       }
 
-      return {
+      const updated = {
         ...prev,
         [key]: {
           ...current,
@@ -93,8 +121,33 @@ function Profile() {
           max,
         },
       };
+
+      setFormData((prevForm) => ({
+        ...prevForm,
+        prices: {
+          ...prevForm.prices,
+          [key]: {
+            ...prevForm.prices[key],
+            value: {
+              min,
+              max,
+            },
+          },
+        },
+      }));
+
+      return updated;
     });
   };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(formData);
+  };
+
+  useEffect(() => {
+    localStorage.setItem("profileCreation", JSON.stringify(profileCreation));
+  }, [profileCreation]);
 
   useEffect(() => {
     if (!loading && user && !isSpecialist) {
@@ -125,16 +178,60 @@ function Profile() {
             Wpisz dane poniżej aby utworzyć profil
           </div>
 
-          <form className="flex flex-col gap-3">
-            <Input type="text" placeholder="Specjalizacja" />
+          <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+            <Input
+              type="text"
+              placeholder="Specjalizacja"
+              value={formData.specialization}
+              onChange={(e) =>
+                setFormData({ ...formData, specialization: e.target.value })
+              }
+            />
+
             <TextArea
               placeholder="Opis działalności"
               className="p-3 rounded-xl bg-neutral-900 border border-neutral-700"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
             />
-            <Input type="text" placeholder="Doświadczenie" />
-            <Input type="text" placeholder="Lokalizacja" />
-            <Input type="number" placeholder="Numer telefonu" />
-            <Input type="email" placeholder="Email" />
+
+            <Input
+              type="text"
+              placeholder="Doświadczenie"
+              value={formData.experience}
+              onChange={(e) =>
+                setFormData({ ...formData, experience: e.target.value })
+              }
+            />
+
+            <Input
+              type="text"
+              placeholder="Lokalizacja"
+              value={formData.localization}
+              onChange={(e) =>
+                setFormData({ ...formData, localization: e.target.value })
+              }
+            />
+
+            <Input
+              type="number"
+              placeholder="Numer telefonu"
+              value={formData.phoneNumber}
+              onChange={(e) =>
+                setFormData({ ...formData, phoneNumber: e.target.value })
+              }
+            />
+
+            <Input
+              type="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+            />
 
             <div className="flex flex-col gap-3">
               <p className="text-gray-600">Przedział cenowy</p>
@@ -160,15 +257,34 @@ function Profile() {
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        onClick={() =>
-                          setPriceTypes((prev) => ({
-                            ...prev,
-                            [key]: {
-                              ...prev[key],
-                              enabled: !prev[key].enabled,
-                            },
-                          }))
-                        }
+                        onClick={() => {
+                          setPriceTypes((prev) => {
+                            const newEnabled = !prev[key].enabled;
+
+                            const updated = {
+                              ...prev,
+                              [key]: {
+                                ...prev[key],
+                                enabled: newEnabled,
+                              },
+                            };
+
+                            setFormData((prevForm) => ({
+                              ...prevForm,
+                              prices: {
+                                ...prevForm.prices,
+                                [key]: {
+                                  enabled: newEnabled,
+                                  value: newEnabled
+                                    ? { ...prevForm.prices[key] }
+                                    : 0,
+                                },
+                              },
+                            }));
+
+                            return updated;
+                          });
+                        }}
                         className={`w-5 h-5 rounded-full border flex items-center justify-center ${
                           item.enabled
                             ? "bg-yellow-400 border-yellow-400"
@@ -214,6 +330,7 @@ function Profile() {
 
                       <div className="flex gap-2 items-center justify-center">
                         <p className="text-xs text-neutral-400">Max</p>
+
                         <input
                           type="range"
                           min={limits.min}
@@ -225,6 +342,7 @@ function Profile() {
                           }
                           className="w-full accent-yellow-400"
                         />
+
                         <input
                           type="number"
                           min={item.min}
@@ -268,7 +386,7 @@ function Profile() {
               </label>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {photos.map((photo) => (
+                {formData.images.map((photo) => (
                   <div key={photo.id} className="relative group">
                     <img
                       src={photo.url}
@@ -287,25 +405,43 @@ function Profile() {
                 ))}
               </div>
             </div>
+
             <div className="grid grid-cols-[minmax(120px,1fr)_2fr] items-center gap-4">
               <label className="text-gray-600">
                 <span>Godziny dostępności</span>
               </label>
 
               <div className="flex gap-3 w-full">
-                <Input type="time" className="w-full" />
+                <Input
+                  type="time"
+                  className="w-full"
+                  value={formData.hourStart}
+                  onChange={(e) =>
+                    setFormData({ ...formData, hourStart: e.target.value })
+                  }
+                />
+
                 <div className="flex items-center justify-center">-</div>
-                <Input type="time" className="w-full" />
+
+                <Input
+                  type="time"
+                  className="w-full"
+                  value={formData.hourEnd}
+                  onChange={(e) =>
+                    setFormData({ ...formData, hourEnd: e.target.value })
+                  }
+                />
               </div>
             </div>
+
             <div className="grid grid-cols-[minmax(120px,1fr)_2fr] items-start gap-4">
               <label className="text-gray-600 pt-2">
                 <span>Dni dostępności</span>
               </label>
 
               <div className="flex flex-wrap gap-2 w-full">
-                {days.map((day) => {
-                  const active = selectedDays.includes(day);
+                {DAYS.map((day) => {
+                  const active = formData.days.includes(day);
 
                   return (
                     <button
@@ -313,14 +449,11 @@ function Profile() {
                       type="button"
                       onClick={() => toggleDay(day)}
                       className={`
-                        flex-1 
-                        px-4 py-2 rounded-xl border transition-all text-sm
-                        ${
+                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm ${
                           active
                             ? "bg-brand text-neutral-100 border-brand"
                             : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"
-                        }
-                      `}
+                        }`}
                     >
                       {day}
                     </button>
@@ -328,12 +461,15 @@ function Profile() {
                 })}
               </div>
             </div>
+
             <div className="flex gap-6 pt-5">
-              <Button className="flex-1" look="secondary">
+              <Button className="flex-1" look="secondary" type="button">
                 Podgląd
               </Button>
-              <Button className="flex-1">Zapisz profil</Button>
-              <Button className="flex-1" look="secondary">
+              <Button className="flex-1" type="submit">
+                Zapisz profil
+              </Button>
+              <Button className="flex-1" look="secondary" type="button">
                 Anuluj
               </Button>
             </div>
