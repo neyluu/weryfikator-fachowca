@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button.jsx";
 import Input from "../components/ui/Input.jsx";
 import TextArea from "../components/ui/TextArea.jsx";
+import ProfileCard from "../components/ui/ProfileCard.jsx";
 
 function Profile() {
   usePageTitle("Weryfikator Fachowca - Profil fachowca");
@@ -17,6 +18,8 @@ function Profile() {
     return saved ? JSON.parse(saved) : false;
   });
   const [errorMessage, setErrorMessage] = useState("");
+  const [isProfilePreviewModalOpen, setIsProfilePreviewModalOpen] =
+    useState(false);
 
   const [formData, setFormData] = useState({
     specialization: "",
@@ -646,7 +649,12 @@ function Profile() {
             </div>
 
             <div className="flex gap-6 pt-5">
-              <Button className="flex-1" look="secondary" type="button">
+              <Button
+                className="flex-1"
+                look="secondary"
+                type="button"
+                onClick={() => setIsProfilePreviewModalOpen(true)}
+              >
                 Podgląd
               </Button>
               <Button className="flex-1" type="submit">
@@ -663,6 +671,32 @@ function Profile() {
               {errorMessage}
             </p>
           )}
+        </div>
+      )}
+
+      {isProfilePreviewModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          {/* overlay click to close */}
+          <div
+            className="absolute inset-0"
+            onClick={() => setIsProfilePreviewModalOpen(false)}
+          />
+
+          <div className="relative bg-neutral-900 border border-neutral-700 rounded-2xl p-3 w-[90%] max-w-xl shadow-xl flex flex-col gap-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg text-black">Podgląd profilu</h2>
+
+              <button
+                className="px-5 py-2 rounded-3xl bg-brand"
+                onClick={() => setIsProfilePreviewModalOpen(false)}
+              >
+                Zamknij
+              </button>
+            </div>
+
+            <ProfileCard data={formData}/>
+
+          </div>
         </div>
       )}
     </div>
