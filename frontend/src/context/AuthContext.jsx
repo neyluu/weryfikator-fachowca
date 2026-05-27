@@ -15,8 +15,14 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  let starting = true;
 
   useEffect(() => {
+    if(starting) {
+      localStorage.removeItem("token");
+      starting = false;
+    }
+
     const token = localStorage.getItem("token");
     if (!token) {
       setLoading(false);
