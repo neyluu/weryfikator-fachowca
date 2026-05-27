@@ -26,9 +26,18 @@ function Profile() {
     phoneNumber: "",
     email: "",
     prices: {
-      consultation: { enabled: false, value: 0 },
-      hourly: { enabled: false, value: 0 },
-      project: { enabled: false, value: 0 },
+      consultation: {
+        enabled: false,
+        value: { min: 0, max: 0 },
+      },
+      hourly: {
+        enabled: false,
+        value: { min: 0, max: 0 },
+      },
+      project: {
+        enabled: false,
+        value: { min: 0, max: 0 },
+      },
     },
     images: [],
     hourStart: 0,
@@ -78,24 +87,6 @@ function Profile() {
     { key: "gardening", label: "Ogrodnictwo" },
   ];
 
-  const [priceTypes, setPriceTypes] = useState({
-    consultation: {
-      enabled: false,
-      min: PRICE_LIMITS.consultation.min,
-      max: PRICE_LIMITS.consultation.max,
-    },
-    hourly: {
-      enabled: false,
-      min: PRICE_LIMITS.hourly.min,
-      max: PRICE_LIMITS.hourly.max,
-    },
-    project: {
-      enabled: false,
-      min: PRICE_LIMITS.project.min,
-      max: PRICE_LIMITS.project.max,
-    },
-  });
-
   const toggleDay = (day) => {
     setFormData((prev) => ({
       ...prev,
@@ -114,6 +105,19 @@ function Profile() {
           : [...prev.categories, category],
       };
     });
+  };
+
+  const togglePrice = (key) => {
+    setFormData((prev) => ({
+      ...prev,
+      prices: {
+        ...prev.prices,
+        [key]: {
+          ...prev.prices[key],
+          enabled: !prev.prices[key].enabled,
+        },
+      },
+    }));
   };
 
   const handleAddPhotos = (e) => {
@@ -141,61 +145,91 @@ function Profile() {
   };
 
   const updatePrice = (key, field, value) => {
-    const val = Number(value);
+    const num = Number(value);
 
-    setPriceTypes((prev) => {
-      const current = prev[key];
+    setFormData((prev) => {
+      const current = prev.prices[key];
 
       let min = current.min;
       let max = current.max;
 
-      if (field === "min") min = val;
-      if (field === "max") max = val;
+      if (field === "min") min = num;
+      if (field === "max") max = num;
 
       if (min > max) {
-        if (field === "min") {
-          max = min;
-        } else {
-          min = max;
-        }
+        if (field === "min") max = min;
+        else min = max;
       }
 
-      const updated = {
+      return {
         ...prev,
-        [key]: {
-          ...current,
-          min,
-          max,
-        },
-      };
-
-      setFormData((prevForm) => ({
-        ...prevForm,
         prices: {
-          ...prevForm.prices,
+          ...prev.prices,
           [key]: {
-            ...prevForm.prices[key],
-            value: {
-              min,
-              max,
-            },
+            ...current,
+            min,
+            max,
           },
         },
-      }));
-
-      return updated;
+      };
     });
   };
 
-  const handleSubmit = (e) => {
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = validateForm();
-    if (!res.success) {
-      setErrorMessage(res.message)
+    console.log("FORM DATA", formData);
+
+    const validationResult = validateForm();
+    if (!validationResult.success) {
+      setErrorMessage(validationResult.message);
     }
 
-    // api
+    const token = localStorage.getItem("token");
+
+    const processedImages = await Promise.all(
+      formData.images.map(async (img) => {
+        if (img.file instanceof File) {
+          const base64String = await convertToBase64(img.file);
+          return {
+            id: img.id,
+            file: {},
+            url: base64String,
+          };
+        }
+        return img;
+      }),
+    );
+
+    const res = await fetch("/api/profile/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        ...formData,
+        images: processedImages,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setErrorMessage("Internal server error");
+      return;
+    }
+
+    console.log("Created profile:", data);
   };
 
   const validateForm = () => {
@@ -417,7 +451,7 @@ function Profile() {
                 { key: "hourly", label: "Stawka godzinowa" },
                 { key: "project", label: "Projekt" },
               ].map(({ key, label }) => {
-                const item = priceTypes[key];
+                const item = formData.prices[key];
                 const disabled = !item.enabled;
                 const limits = PRICE_LIMITS[key];
 
@@ -433,34 +467,7 @@ function Profile() {
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        onClick={() => {
-                          setPriceTypes((prev) => {
-                            const newEnabled = !prev[key].enabled;
-
-                            const updated = {
-                              ...prev,
-                              [key]: {
-                                ...prev[key],
-                                enabled: newEnabled,
-                              },
-                            };
-
-                            setFormData((prevForm) => ({
-                              ...prevForm,
-                              prices: {
-                                ...prevForm.prices,
-                                [key]: {
-                                  enabled: newEnabled,
-                                  value: newEnabled
-                                    ? { ...prevForm.prices[key] }
-                                    : 0,
-                                },
-                              },
-                            }));
-
-                            return updated;
-                          });
-                        }}
+                        onClick={() => togglePrice(key)}
                         className={`w-5 h-5 rounded-full border flex items-center justify-center ${
                           item.enabled
                             ? "bg-yellow-400 border-yellow-400"
@@ -484,7 +491,7 @@ function Profile() {
                           min={limits.min}
                           max={limits.max}
                           value={item.min}
-                          disabled={disabled}
+                          disabled={!item.enabled}
                           onChange={(e) =>
                             updatePrice(key, "min", e.target.value)
                           }
@@ -512,7 +519,7 @@ function Profile() {
                           min={limits.min}
                           max={limits.max}
                           value={item.max}
-                          disabled={disabled}
+                          disabled={!item.enabled}
                           onChange={(e) =>
                             updatePrice(key, "max", e.target.value)
                           }
