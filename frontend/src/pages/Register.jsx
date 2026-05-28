@@ -25,21 +25,19 @@ function Register() {
   usePageTitle("Weryfikator Fachowca - Rejestracja");
   const { register } = useAuth();
   const location = useLocation();
-
   const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
+    confirmPassword: "",
     role: "USER",
   });
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const role = params.get("role");
-
     if (role === "specialist") {
       setForm((prev) => ({ ...prev, role: "SPECIALIST" }));
     }
@@ -52,7 +50,13 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!form.username || !form.email || !form.password) {
+
+    if (
+      !form.username ||
+      !form.email ||
+      !form.password ||
+      !form.confirmPassword
+    ) {
       setError("Wszystkie pola są wymagane");
       return;
     }
@@ -60,6 +64,11 @@ function Register() {
       setError("Hasło musi zawierać co najmniej 8 znaków");
       return;
     }
+    if (form.password !== form.confirmPassword) {
+      setError("Hasła nie są zgodne");
+      return;
+    }
+
     setLoading(true);
     try {
       await register(form.username, form.email, form.password, form.role);
@@ -77,7 +86,6 @@ function Register() {
         className="w-full max-w-sm p-4 flex flex-col gap-4 bg-neutral-800/25 rounded-3xl"
       >
         <h1 className="text-xl font-medium text-center">Rejestracja</h1>
-
         <Input
           type="text"
           name="username"
@@ -85,7 +93,6 @@ function Register() {
           value={form.username}
           onChange={handleChange}
         />
-
         <Input
           type="email"
           name="email"
@@ -93,7 +100,6 @@ function Register() {
           value={form.email}
           onChange={handleChange}
         />
-
         <Input
           type="password"
           name="password"
@@ -101,7 +107,13 @@ function Register() {
           value={form.password}
           onChange={handleChange}
         />
-
+        <Input
+          type="password"
+          name="confirmPassword"
+          placeholder="Potwierdź hasło"
+          value={form.confirmPassword}
+          onChange={handleChange}
+        />
         <div className="flex flex-row gap-2">
           {ROLES.map(({ value, label, description, icon: Icon }) => {
             const selected = form.role === value;
@@ -124,13 +136,11 @@ function Register() {
             );
           })}
         </div>
-
         <Button type="submit" disabled={loading} className="w-full">
           {loading ? "Tworzenie konta..." : "Utwórz konto"}
         </Button>
-
         {error && (
-          <p className="text-sm text-center text-neutral-400 max-w-fit border-t border-t-neutral-800/75 pt-2">
+          <p className="text-sm text-center text-neutral-400 border-t border-t-neutral-800/75 pt-2">
             {error}
           </p>
         )}
