@@ -2,10 +2,12 @@ function ProfileCard({ data }) {
   const profile = data.profile;
   const user = data.user;
 
-  console.log(profile, user)
+  console.log(profile, user);
 
   const weekdayOrder = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd"];
-  profile.days.sort((a, b) => weekdayOrder.indexOf(a) - weekdayOrder.indexOf(b))
+  profile.days.sort(
+    (a, b) => weekdayOrder.indexOf(a) - weekdayOrder.indexOf(b),
+  );
 
   const enabledPrices = Object.entries(profile.prices || {}).filter(
     ([, item]) => item.enabled,
@@ -30,7 +32,7 @@ function ProfileCard({ data }) {
             />
 
             <div className="flex flex-col justify-center">
-              <h2 className="text-2xl font-bold">{user.username}</h2>
+              <h2 className="text-2xl font-bold">{user.fullName}</h2>
 
               <p className="text-neutral-300 text-lg">
                 {profile.specialization || "Brak specjalizacji"}

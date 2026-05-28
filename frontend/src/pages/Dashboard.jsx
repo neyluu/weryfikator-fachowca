@@ -4,7 +4,7 @@ import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { AlertModal } from "../components/ui/AlertModal";
 
-export default function DashboardLayout() {
+export default function Dashboard() {
   const { user, loading, saveToken } = useAuth();
   const [open, setOpen] = useState(false);
 
@@ -41,6 +41,21 @@ export default function DashboardLayout() {
         <div className="flex flex-col gap-1 mt-4">
           <div className="text-xs text-neutral-500">Konto</div>
 
+          {isSpecialist && (
+            <NavLink
+              to="/dashboard/profile"
+              className={({ isActive }) =>
+                `text-sm text-left px-2 py-1 rounded-lg ${
+                  isActive
+                    ? "bg-neutral-800 text-neutral-200"
+                    : "text-neutral-400 hover:bg-neutral-800"
+                }`
+              }
+            >
+              Profil publiczny
+            </NavLink>
+          )}
+
           <NavLink
             to="/dashboard/account"
             className={({ isActive }) =>
@@ -55,7 +70,7 @@ export default function DashboardLayout() {
           </NavLink>
 
           <NavLink
-            to="/dashboard/activity"
+            to="/dashboard/settings"
             className={({ isActive }) =>
               `text-sm text-left px-2 py-1 rounded-lg ${
                 isActive
@@ -64,23 +79,8 @@ export default function DashboardLayout() {
               }`
             }
           >
-            Aktywność
+            Ustawienia
           </NavLink>
-
-          {isSpecialist && (
-              <NavLink
-                  to="/dashboard/profile"
-                  className={({ isActive }) =>
-                      `text-sm text-left px-2 py-1 rounded-lg ${
-                          isActive
-                              ? "bg-neutral-800 text-neutral-200"
-                              : "text-neutral-400 hover:bg-neutral-800"
-                      }`
-                  }
-              >
-                Profil
-              </NavLink>
-          )}
         </div>
 
         <div className="flex flex-col mt-auto gap-2">

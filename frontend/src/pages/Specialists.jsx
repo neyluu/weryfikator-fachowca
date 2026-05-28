@@ -147,7 +147,7 @@ export default function SpecialistsLanding() {
           Załóż profil i dołącz do zweryfikowanych specjalistów.
         </p>
 
-        <Button href="/register" className="mt-4">
+        <Button href="/auth/register?role=specialist" className="mt-4">
           Dołącz jako specjalista
         </Button>
       </div>

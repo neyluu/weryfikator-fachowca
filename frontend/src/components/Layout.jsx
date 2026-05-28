@@ -13,12 +13,19 @@ const Layout = ({ children }) => {
     location.pathname.startsWith("/dashboard");
   const isAuthRoute = location.pathname.startsWith("/auth");
 
+  const getGreeting = (name) => {
+    const hour = new Date().getHours();
+    if (hour >= 4 && hour < 17) return `Dzień dobry, ${name}`;
+    return `Dobry wieczór, ${name}`;
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <div className="w-full flex flex-row items-center justify-center">
         <nav className="w-full max-w-5xl flex flex-row items-center justify-between px-4 py-2">
           <a
             href={`${location.pathname.startsWith("/dashboard") ? "/dashboard" : "/"}`}
+            className="flex items-center gap-3"
           >
             <img
               src="/WeryfikatorFachowca_Logo.svg"
@@ -26,11 +33,20 @@ const Layout = ({ children }) => {
               className="w-10 h-10"
               draggable="false"
             />
+            <span className="text-neutral-100 font-medium">
+              Weryfikator Fachowca
+            </span>
           </a>
 
           <div className="flex items-center gap-5">
+            {user && !location.pathname.startsWith("/dashboard") && (
+              <a href="/dashboard">Dashboard</a>
+            )}
+            {user && location.pathname.startsWith("/dashboard") && (
+              <span>{getGreeting(user.fullName?.split(" ")[0])}</span>
+            )}
             {user && (
-              <Button look="secondary" onClick={logout} size="sm">
+              <Button look="secondary" onClick={logout}>
                 Wyloguj się
               </Button>
             )}
