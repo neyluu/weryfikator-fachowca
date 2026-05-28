@@ -20,7 +20,7 @@ function Profile() {
     return saved ? JSON.parse(saved) : false;
   });
   const [errorMessage, setErrorMessage] = useState("");
-  const [profileCreatedMessage, setProfileCreatedMessage] = useState("")
+  const [profileCreatedMessage, setProfileCreatedMessage] = useState("");
   const [isProfilePreviewModalOpen, setIsProfilePreviewModalOpen] =
     useState(false);
 
@@ -185,7 +185,7 @@ function Profile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage("")
+    setErrorMessage("");
 
     console.log("FORM DATA", formData);
 
@@ -230,7 +230,7 @@ function Profile() {
 
     const data = await res.json();
     console.log("Created profile:", data);
-    setProfileCreatedMessage("Utworzono profil!")
+    setProfileCreatedMessage("Utworzono profil!");
   };
 
   const validateForm = () => {
@@ -352,14 +352,14 @@ function Profile() {
         },
       });
 
-      if(!res.ok) {
+      if (!res.ok) {
         // TODO - probably should display some error or sth
-        console.log("Failed to load user data")
+        console.log("Failed to load user data");
         return;
       }
 
-      const data = await res.json()
-      setUserData(data)
+      const data = await res.json();
+      setUserData(data);
     }
 
     fetchUserData();
@@ -615,50 +615,20 @@ function Profile() {
               </div>
             </div>
 
-            <div className="grid grid-cols-[minmax(120px,1fr)_2fr] items-center gap-4">
-              <label className="text-gray-600">
-                <span>Godziny dostępności</span>
-              </label>
+            <div className="flex flex-col gap-2">
+              <p className="text-gray-600">Dostępność</p>
 
-              <div className="flex gap-3 w-full">
-                <Input
-                  type="time"
-                  className="w-full"
-                  value={formData.hourStart}
-                  onChange={(e) =>
-                    setFormData({ ...formData, hourStart: e.target.value })
-                  }
-                />
+              {DAYS.map((day) => {
+                const active = formData.days.includes(day);
 
-                <div className="flex items-center justify-center">-</div>
-
-                <Input
-                  type="time"
-                  className="w-full"
-                  value={formData.hourEnd}
-                  onChange={(e) =>
-                    setFormData({ ...formData, hourEnd: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-[minmax(120px,1fr)_2fr] items-start gap-4">
-              <label className="text-gray-600 pt-2">
-                <span>Dni dostępności</span>
-              </label>
-
-              <div className="flex flex-wrap gap-2 w-full">
-                {DAYS.map((day) => {
-                  const active = formData.days.includes(day);
-
-                  return (
+                return (
+                  <div className="flex gap-10 w-1/2">
                     <button
                       key={day}
                       type="button"
                       onClick={() => toggleDay(day)}
                       className={`
-                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm ${
+                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm min-w-15 max-w-15 ${
                           active
                             ? "bg-brand text-neutral-100 border-brand"
                             : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"
@@ -666,9 +636,33 @@ function Profile() {
                     >
                       {day}
                     </button>
-                  );
-                })}
-              </div>
+
+                    <div className="flex gap-3">
+                      <Input
+                        type="time"
+                        className="w-full"
+                        value={formData.hourEnd}
+                        disabled={!active}
+                        onChange={(e) =>
+                          setFormData({ ...formData, hourEnd: e.target.value })
+                        }
+                      />
+
+                      <div className="flex items-center justify-center">-</div>
+
+                      <Input
+                        type="time"
+                        className="w-full"
+                        value={formData.hourEnd}
+                        disabled={!active}
+                        onChange={(e) =>
+                          setFormData({ ...formData, hourEnd: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="flex gap-6 pt-5">
