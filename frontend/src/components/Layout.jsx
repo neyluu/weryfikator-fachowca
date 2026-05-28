@@ -19,6 +19,7 @@ const Layout = ({ children }) => {
         <nav className="w-full max-w-5xl flex flex-row items-center justify-between px-4 py-2">
           <a
             href={`${location.pathname.startsWith("/dashboard") ? "/dashboard" : "/"}`}
+            className="flex items-center gap-3"
           >
             <img
               src="/WeryfikatorFachowca_Logo.svg"
@@ -26,11 +27,17 @@ const Layout = ({ children }) => {
               className="w-10 h-10"
               draggable="false"
             />
+            <span className="text-neutral-100 font-medium">
+              Weryfikator Fachowca
+            </span>
           </a>
 
           <div className="flex items-center gap-5">
+            {user && !location.pathname.startsWith("/dashboard") && (
+              <a href="/dashboard">Dashboard</a>
+            )}
             {user && (
-              <Button look="secondary" onClick={logout} size="sm">
+              <Button look="secondary" onClick={logout}>
                 Wyloguj się
               </Button>
             )}
