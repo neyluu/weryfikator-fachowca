@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,11 +54,8 @@ public class Profile {
     @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProfileImage> images = new ArrayList<>();
 
-    private LocalTime hourStart;
-    private LocalTime hourEnd;
-
     @ElementCollection
-    private List<String> days = new ArrayList<>();
+    private List<AvailabilityDay> availability = new ArrayList<>();
 
     @ElementCollection
     private List<String> categories = new ArrayList<>();

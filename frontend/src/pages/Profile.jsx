@@ -51,8 +51,8 @@ function Profile() {
       /*
       {
         day: "Pon",
-        start: "00:00",
-        end: "09:00"
+        startTime: "00:00",
+        endTime: "09:00"
       },
     */
     ],
@@ -100,8 +100,8 @@ function Profile() {
         setSavedHours((prevHours) => ({
           ...prevHours,
           [day]: {
-            start: existing.start,
-            end: existing.end,
+            startTime: existing.startTime,
+            endTime: existing.endTime,
           },
         }));
 
@@ -117,8 +117,8 @@ function Profile() {
           ...prev.availability,
           {
             day,
-            start: savedHours[day]?.start ?? "00:00",
-            end: savedHours[day]?.end ?? "23:59",
+            startTime: savedHours[day]?.startTime ?? "00:00",
+            endTime: savedHours[day]?.endTime ?? "23:59",
           },
         ],
       };
@@ -232,6 +232,7 @@ function Profile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    setProfileCreatedMessage("")
 
     console.log("FORM DATA", formData);
 
@@ -349,19 +350,21 @@ function Profile() {
       };
     }
 
-    if (formData.hourStart >= formData.hourEnd) {
-      return {
-        success: false,
-        message:
-          "Godzina rozpoczęcia musi być wcześniejsza niż godzina zakończenia.",
-      };
-    }
-
-    if (!formData.days.length) {
+    if (!formData.availability.length) {
       return {
         success: false,
         message: "Musisz wybrać przynajmniej jeden dzień.",
       };
+    }
+
+    for (const item of formData.availability) {
+      if (item.startTime >= item.endTime) {
+        return {
+          success: false,
+          message:
+            "Godzina rozpoczęcia musi być wcześniejsza niż godzina zakończenia.",
+        };
+      }
     }
 
     if (formData.categories.length < 1 || formData.categories.length > 5) {
@@ -691,7 +694,7 @@ function Profile() {
                         className="w-full"
                         disabled={!active}
                         onChange={(e) =>
-                          updateHour(day, e.target.value, "start")
+                          updateHour(day, e.target.value, "startTime")
                         }
                       />
 
@@ -701,7 +704,7 @@ function Profile() {
                         type="time"
                         className="w-full"
                         disabled={!active}
-                        onChange={(e) => updateHour(day, e.target.value, "end")}
+                        onChange={(e) => updateHour(day, e.target.value, "endTime")}
                       />
                     </div>
                   </div>

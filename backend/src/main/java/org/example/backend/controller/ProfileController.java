@@ -3,10 +3,7 @@ package org.example.backend.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.request.CreateProfileRequest;
-import org.example.backend.entity.PriceRange;
-import org.example.backend.entity.Profile;
-import org.example.backend.entity.ProfileImage;
-import org.example.backend.entity.User;
+import org.example.backend.entity.*;
 import org.example.backend.repository.ProfileRepository;
 import org.example.backend.repository.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -84,13 +81,17 @@ public class ProfileController {
                     .body(Map.of("error", "Invalid image data: " + e.getMessage()));
         }
 
-        profile.setDays(dto.days());
-        profile.setCategories(dto.categories());
+        List<AvailabilityDay> availability = dto.availability()
+                .stream()
+                .map(item -> new AvailabilityDay(
+                        item.day(),
+                        item.startTime(),
+                        item.endTime()
+                )).toList();
 
-        profile.setHourStart(dto.hourStart());
-        profile.setHourEnd(dto.hourEnd());
-
+        profile.setAvailability(availability);
         profile.setUser(user);
+        profile.setCategories(dto.categories());
 
         profileRepository.save(profile);
 

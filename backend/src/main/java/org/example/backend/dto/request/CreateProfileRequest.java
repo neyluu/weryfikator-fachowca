@@ -14,12 +14,8 @@ public record CreateProfileRequest(
         @NotBlank String phoneNumber,
         @NotBlank String email,
         @Valid PricesDto prices,
-
         @NotEmpty List<ImageDto> images,
-
-        @NotNull LocalTime hourStart,
-        @NotNull LocalTime hourEnd,
-        @NotEmpty List<String> days,
+        @NotEmpty List<AvailabilityDto> availability,
         @NotEmpty List<String> categories
 ) {
     public record ImageDto(
@@ -45,6 +41,13 @@ public record CreateProfileRequest(
     public record Value(
             Double min,
             Double max
+    ) {
+    }
+
+    public record AvailabilityDto(
+            String day,
+            LocalTime startTime,
+            LocalTime endTime
     ) {
     }
 }
