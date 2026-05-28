@@ -2,11 +2,9 @@ function ProfileCard({ data }) {
   const profile = data.profile;
   const user = data.user;
 
-  console.log(profile, user);
-
   const weekdayOrder = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd"];
-  profile.days.sort(
-    (a, b) => weekdayOrder.indexOf(a) - weekdayOrder.indexOf(b),
+  profile.availability.sort(
+    (a, b) => weekdayOrder.indexOf(a.day) - weekdayOrder.indexOf(b.day),
   );
 
   const enabledPrices = Object.entries(profile.prices || {}).filter(
@@ -89,20 +87,19 @@ function ProfileCard({ data }) {
       <div className="py-2 flex flex-col gap-2 border-t border-neutral-800">
         <h3 className="text-lg font-semibold">Godziny pracy</h3>
 
-        <div className="flex flex-wrap gap-2">
-          {profile.days?.map((day, index) => (
-            <span
-              key={index}
-              className="px-3 py-1 rounded-xl bg-brand border border-brand"
-            >
-              {day}
-            </span>
+        <div className="flex flex-col gap-2">
+          {profile.availability?.map((item) => (
+            <div className="flex flex-wrap gap-5 items-center" key={item.day}>
+              <span className="px-3 py-1 rounded-xl bg-brand border border-brand min-w-15">
+                {item.day}
+              </span>
+
+              <p className="text-neutral-300 text-lg">
+                {item.start} - {item.end}
+              </p>
+            </div>
           ))}
         </div>
-
-        <p className="text-neutral-300 text-lg">
-          {profile.hourStart} - {profile.hourEnd}
-        </p>
       </div>
 
       <div className="py-2 flex flex-col gap-2 border-t border-neutral-800">

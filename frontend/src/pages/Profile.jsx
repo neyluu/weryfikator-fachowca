@@ -23,6 +23,7 @@ function Profile() {
   const [profileCreatedMessage, setProfileCreatedMessage] = useState("");
   const [isProfilePreviewModalOpen, setIsProfilePreviewModalOpen] =
     useState(false);
+  const [savedHours, setSavedHours] = useState({});
 
   const [formData, setFormData] = useState({
     specialization: "",
@@ -46,9 +47,15 @@ function Profile() {
       },
     },
     images: [],
-    hourStart: 0,
-    hourEnd: 0,
-    days: [],
+    availability: [
+      /*
+      {
+        day: "Pon",
+        start: "00:00",
+        end: "09:00"
+      },
+    */
+    ],
     categories: [],
   });
 
@@ -86,11 +93,49 @@ function Profile() {
   ];
 
   const toggleDay = (day) => {
+    setFormData((prev) => {
+      const existing = prev.availability.find((item) => item.day === day);
+
+      if (existing) {
+        setSavedHours((prevHours) => ({
+          ...prevHours,
+          [day]: {
+            start: existing.start,
+            end: existing.end,
+          },
+        }));
+
+        return {
+          ...prev,
+          availability: prev.availability.filter((item) => item.day !== day),
+        };
+      }
+
+      return {
+        ...prev,
+        availability: [
+          ...prev.availability,
+          {
+            day,
+            start: savedHours[day]?.start ?? "00:00",
+            end: savedHours[day]?.end ?? "23:59",
+          },
+        ],
+      };
+    });
+  };
+
+  const updateHour = (day, value, type) => {
     setFormData((prev) => ({
       ...prev,
-      days: prev.days.includes(day)
-        ? prev.days.filter((d) => d !== day)
-        : [...prev.days, day],
+      availability: prev.availability.map((item) =>
+        item.day === day
+          ? {
+              ...item,
+              [type]: value,
+            }
+          : item,
+      ),
     }));
   };
 
@@ -174,6 +219,7 @@ function Profile() {
       };
     });
   };
+
   const convertToBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -619,10 +665,12 @@ function Profile() {
               <p className="text-gray-600">Dostępność</p>
 
               {DAYS.map((day) => {
-                const active = formData.days.includes(day);
+                const active = formData.availability.some(
+                  (item) => item.day === day,
+                );
 
                 return (
-                  <div className="flex gap-10 w-1/2">
+                  <div className="flex gap-10 w-1/2" key={day}>
                     <button
                       key={day}
                       type="button"
@@ -641,10 +689,9 @@ function Profile() {
                       <Input
                         type="time"
                         className="w-full"
-                        value={formData.hourEnd}
                         disabled={!active}
                         onChange={(e) =>
-                          setFormData({ ...formData, hourEnd: e.target.value })
+                          updateHour(day, e.target.value, "start")
                         }
                       />
 
@@ -653,11 +700,8 @@ function Profile() {
                       <Input
                         type="time"
                         className="w-full"
-                        value={formData.hourEnd}
                         disabled={!active}
-                        onChange={(e) =>
-                          setFormData({ ...formData, hourEnd: e.target.value })
-                        }
+                        onChange={(e) => updateHour(day, e.target.value, "end")}
                       />
                     </div>
                   </div>
