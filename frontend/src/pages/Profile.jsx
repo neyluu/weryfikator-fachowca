@@ -147,8 +147,8 @@ function Profile() {
     setFormData((prev) => {
       const current = prev.prices[key];
 
-      let min = current.min;
-      let max = current.max;
+      let min = current.value.min;
+      let max = current.value.max;
 
       if (field === "min") min = num;
       if (field === "max") max = num;
@@ -164,14 +164,15 @@ function Profile() {
           ...prev.prices,
           [key]: {
             ...current,
-            min,
-            max,
+            value: {
+              min,
+              max,
+            },
           },
         },
       };
     });
   };
-
   const convertToBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -219,13 +220,12 @@ function Profile() {
       }),
     });
 
-    const data = await res.json();
-
     if (!res.ok) {
       setErrorMessage("Internal server error");
       return;
     }
 
+    const data = await res.json();
     console.log("Created profile:", data);
   };
 
@@ -339,8 +339,6 @@ function Profile() {
   useEffect(() => {
     async function fetchUserData() {
       const token = localStorage.getItem("token");
-
-      console.log(token)
 
       const res = await fetch("/api/me/get", {
         method: "GET",
@@ -514,7 +512,7 @@ function Profile() {
                           type="range"
                           min={limits.min}
                           max={limits.max}
-                          value={item.min}
+                          value={item.value.min}
                           disabled={!item.enabled}
                           onChange={(e) =>
                             updatePrice(key, "min", e.target.value)
@@ -525,8 +523,8 @@ function Profile() {
                         <input
                           type="number"
                           min={limits.min}
-                          max={item.max}
-                          value={item.min}
+                          max={limits.max}
+                          value={item.value.min}
                           disabled={disabled}
                           onChange={(e) =>
                             updatePrice(key, "min", e.target.value)
@@ -542,7 +540,7 @@ function Profile() {
                           type="range"
                           min={limits.min}
                           max={limits.max}
-                          value={item.max}
+                          value={item.value.max}
                           disabled={!item.enabled}
                           onChange={(e) =>
                             updatePrice(key, "max", e.target.value)
@@ -552,9 +550,9 @@ function Profile() {
 
                         <input
                           type="number"
-                          min={item.min}
+                          min={limits.min}
                           max={limits.max}
-                          value={item.max}
+                          value={item.value.max}
                           disabled={disabled}
                           onChange={(e) =>
                             updatePrice(key, "max", e.target.value)

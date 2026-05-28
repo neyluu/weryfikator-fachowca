@@ -120,7 +120,7 @@ function ProfileCard({ data }) {
                 </p>
 
                 <p className="text-xl font-bold">
-                  {item.min} zł - {item.max} zł
+                  {item.value.min} zł - {item.value.max} zł
                 </p>
               </div>
             ))
