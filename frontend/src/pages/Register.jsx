@@ -21,12 +21,15 @@ const ROLES = [
   },
 ];
 
+const fullNameRegex =
+  /^[A-Za-ząćęłńóśźżĄĆĘŁŃÓŚŹŻ]+([- ][A-Za-ząćęłńóśźżĄĆĘŁŃÓŚŹŻ]+)+$/;
+
 function Register() {
   usePageTitle("Weryfikator Fachowca - Rejestracja");
   const { register } = useAuth();
   const location = useLocation();
   const [form, setForm] = useState({
-    username: "",
+    fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -52,12 +55,20 @@ function Register() {
     setError("");
 
     if (
-      !form.username ||
+      !form.fullName ||
       !form.email ||
       !form.password ||
       !form.confirmPassword
     ) {
       setError("Wszystkie pola są wymagane");
+      return;
+    }
+    if (form.fullName.trim().length < 3 || form.fullName.trim().length > 100) {
+      setError("Imię i nazwisko musi mieć od 3 do 100 znaków");
+      return;
+    }
+    if (!fullNameRegex.test(form.fullName.trim())) {
+      setError("Podaj imię i nazwisko (tylko litery, spacje i myślniki)");
       return;
     }
     if (form.password.length < 8) {
@@ -71,7 +82,7 @@ function Register() {
 
     setLoading(true);
     try {
-      await register(form.username, form.email, form.password, form.role);
+      await register(form.fullName, form.email, form.password, form.role);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -88,9 +99,9 @@ function Register() {
         <h1 className="text-xl font-medium text-center">Rejestracja</h1>
         <Input
           type="text"
-          name="username"
-          placeholder="Nazwa użytkownika"
-          value={form.username}
+          name="fullName"
+          placeholder="Imię i nazwisko"
+          value={form.fullName}
           onChange={handleChange}
         />
         <Input

@@ -28,23 +28,18 @@ public class UserService {
 
     public AuthResponse upgradeToSpecialist(String email) {
         User user = getByEmail(email);
-
-        if (user.getRole() == Role.SPECIALIST) {
-            throw new IllegalArgumentException("Już jesteś specjalistą");
-        }
-
+        if (
+            user.getRole() == Role.SPECIALIST
+        ) throw new IllegalArgumentException("Już jesteś specjalistą");
         user.setRole(Role.SPECIALIST);
-
         userRepository.save(user);
-
         String token = jwtUtil.generateToken(
             user.getEmail(),
             user.getRole().name()
         );
-
         return new AuthResponse(
             token,
-            user.getUsername(),
+            user.getFullName(),
             user.getEmail(),
             user.getRole().name()
         );

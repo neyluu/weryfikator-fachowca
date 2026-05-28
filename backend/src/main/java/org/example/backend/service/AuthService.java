@@ -28,26 +28,21 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest req) {
         if (
-            userRepository.existsByUsername(req.username())
-        ) throw new IllegalArgumentException("Nazwa użytkownika już istnieje");
-        if (
             userRepository.existsByEmail(req.email())
         ) throw new IllegalArgumentException("Email już istnieje");
-
         User user = new User();
-        user.setUsername(req.username());
+        user.setFullName(req.fullName());
         user.setEmail(req.email());
         user.setPasswordHash(passwordEncoder.encode(req.password()));
         user.setRole(req.role() != null ? req.role() : Role.USER);
         userRepository.save(user);
-
         String token = jwtUtil.generateToken(
             user.getEmail(),
             user.getRole().name()
         );
         return new AuthResponse(
             token,
-            user.getUsername(),
+            user.getFullName(),
             user.getEmail(),
             user.getRole().name()
         );
@@ -59,18 +54,16 @@ public class AuthService {
             .orElseThrow(() ->
                 new IllegalArgumentException("Nieprawidłowe dane")
             );
-
         if (
             !passwordEncoder.matches(req.password(), user.getPasswordHash())
         ) throw new IllegalArgumentException("Nieprawidłowe dane");
-
         String token = jwtUtil.generateToken(
             user.getEmail(),
             user.getRole().name()
         );
         return new AuthResponse(
             token,
-            user.getUsername(),
+            user.getFullName(),
             user.getEmail(),
             user.getRole().name()
         );
