@@ -20,6 +20,7 @@ function Profile() {
     return saved ? JSON.parse(saved) : false;
   });
   const [errorMessage, setErrorMessage] = useState("");
+  const [profileCreatedMessage, setProfileCreatedMessage] = useState("")
   const [isProfilePreviewModalOpen, setIsProfilePreviewModalOpen] =
     useState(false);
 
@@ -184,12 +185,14 @@ function Profile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage("")
 
     console.log("FORM DATA", formData);
 
     const validationResult = validateForm();
     if (!validationResult.success) {
       setErrorMessage(validationResult.message);
+      return;
     }
 
     const token = localStorage.getItem("token");
@@ -227,6 +230,7 @@ function Profile() {
 
     const data = await res.json();
     console.log("Created profile:", data);
+    setProfileCreatedMessage("Utworzono profil!")
   };
 
   const validateForm = () => {
@@ -690,6 +694,12 @@ function Profile() {
               {errorMessage}
             </p>
           )}
+
+          {profileCreatedMessage && (
+            <p className="flex justify-center text-green-600 border-green-300 border-2 rounded-3xl p-2 bg-green-100">
+              {profileCreatedMessage}
+            </p>
+          )}
         </div>
       )}
 
@@ -713,10 +723,12 @@ function Profile() {
               </button>
             </div>
 
-            <ProfileCard data={{
-              profile: formData,
-              user: userData
-            }} />
+            <ProfileCard
+              data={{
+                profile: formData,
+                user: userData,
+              }}
+            />
           </div>
         </div>
       )}
