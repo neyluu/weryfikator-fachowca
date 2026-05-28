@@ -4,6 +4,9 @@ function ProfileCard({ data }) {
 
   console.log(profile, user)
 
+  const weekdayOrder = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd"];
+  profile.days.sort((a, b) => weekdayOrder.indexOf(a) - weekdayOrder.indexOf(b))
+
   const enabledPrices = Object.entries(profile.prices || {}).filter(
     ([, item]) => item.enabled,
   );
