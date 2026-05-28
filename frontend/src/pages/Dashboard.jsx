@@ -35,7 +35,7 @@ export default function DashboardLayout() {
   if (loading || !user) return null;
 
   return (
-    <div className="flex py-5">
+    <div className="flex py-5 w-full">
       {/* SIDEBAR */}
       <div className="border-r border-neutral-800/25 bg-neutral-900/40 pr-5 flex flex-col gap-5">
         <div className="flex flex-col gap-1 mt-4">
@@ -66,6 +66,21 @@ export default function DashboardLayout() {
           >
             Aktywność
           </NavLink>
+
+          {isSpecialist && (
+              <NavLink
+                  to="/dashboard/profile"
+                  className={({ isActive }) =>
+                      `text-sm text-left px-2 py-1 rounded-lg ${
+                          isActive
+                              ? "bg-neutral-800 text-neutral-200"
+                              : "text-neutral-400 hover:bg-neutral-800"
+                      }`
+                  }
+              >
+                Profil
+              </NavLink>
+          )}
         </div>
 
         <div className="flex flex-col mt-auto gap-2">
