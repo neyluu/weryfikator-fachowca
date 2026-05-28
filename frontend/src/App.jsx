@@ -13,10 +13,11 @@ import Dashboard from "./pages/Dashboard";
 import Specialists from "./pages/Specialists";
 import NotFound from "./pages/NotFound";
 import Account from "./pages/Account";
-import Activity from "./pages/Activity";
 import GuestRoute from "./GuestRoute";
+import ProtectedRoute from "./ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import Profile from "./pages/Profile.jsx";
+import Settings from "./pages/Settings.jsx";
 
 function App() {
   return (
@@ -42,12 +43,19 @@ function App() {
                 </GuestRoute>
               }
             />
-            <Route path="/dashboard" element={<Dashboard />}>
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            >
               <Route index element={<Navigate to="account" replace />} />
 
               <Route path="account" element={<Account />} />
-              <Route path="activity" element={<Activity />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

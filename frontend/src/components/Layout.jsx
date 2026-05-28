@@ -13,6 +13,12 @@ const Layout = ({ children }) => {
     location.pathname.startsWith("/dashboard");
   const isAuthRoute = location.pathname.startsWith("/auth");
 
+  const getGreeting = (name) => {
+    const hour = new Date().getHours();
+    if (hour >= 4 && hour < 17) return `Dzień dobry, ${name}`;
+    return `Dobry wieczór, ${name}`;
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <div className="w-full flex flex-row items-center justify-center">
@@ -35,6 +41,9 @@ const Layout = ({ children }) => {
           <div className="flex items-center gap-5">
             {user && !location.pathname.startsWith("/dashboard") && (
               <a href="/dashboard">Dashboard</a>
+            )}
+            {user && location.pathname.startsWith("/dashboard") && (
+              <span>{getGreeting(user.fullName?.split(" ")[0])}</span>
             )}
             {user && (
               <Button look="secondary" onClick={logout}>

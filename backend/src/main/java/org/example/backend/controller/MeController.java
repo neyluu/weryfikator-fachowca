@@ -1,14 +1,13 @@
 package org.example.backend.controller;
 
+import jakarta.validation.Valid;
+import org.example.backend.dto.request.UpdateProfileRequest;
 import org.example.backend.dto.response.AuthResponse;
 import org.example.backend.dto.response.UserDto;
 import org.example.backend.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/me")
@@ -22,19 +21,27 @@ public class MeController {
 
     @PatchMapping("/role/specialist")
     public ResponseEntity<AuthResponse> upgradeToSpecialist(
-            Authentication auth
+        Authentication auth
     ) {
         return ResponseEntity.ok(
-                userService.upgradeToSpecialist(auth.getName())
+            userService.upgradeToSpecialist(auth.getName())
         );
     }
 
     @GetMapping("/get")
-    public ResponseEntity<UserDto> getSelf(
-            Authentication authentication
+    public ResponseEntity<UserDto> getSelf(Authentication authentication) {
+        return ResponseEntity.ok(
+            new UserDto(userService.getByEmail(authentication.getName()))
+        );
+    }
+
+    @PatchMapping("/update")
+    public ResponseEntity<AuthResponse> update(
+        @Valid @RequestBody UpdateProfileRequest dto,
+        Authentication authentication
     ) {
         return ResponseEntity.ok(
-                new UserDto(userService.getByEmail(authentication.getName()))
+            userService.update(authentication.getName(), dto)
         );
     }
 }

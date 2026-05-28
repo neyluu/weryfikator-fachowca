@@ -38,7 +38,8 @@ public class AuthService {
         userRepository.save(user);
         String token = jwtUtil.generateToken(
             user.getEmail(),
-            user.getRole().name()
+            user.getRole().name(),
+            user.getFullName()
         );
         return new AuthResponse(
             token,
@@ -59,7 +60,8 @@ public class AuthService {
         ) throw new IllegalArgumentException("Nieprawidłowe dane");
         String token = jwtUtil.generateToken(
             user.getEmail(),
-            user.getRole().name()
+            user.getRole().name(),
+            user.getFullName()
         );
         return new AuthResponse(
             token,

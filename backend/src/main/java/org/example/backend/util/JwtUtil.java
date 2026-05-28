@@ -21,17 +21,18 @@ public class JwtUtil {
         this.expiration = expiration;
     }
 
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, String role, String fullName) {
         return Jwts.builder()
             .subject(email)
             .claim("role", role)
+            .claim("fullName", fullName)
             .issuedAt(new Date())
             .expiration(new Date(System.currentTimeMillis() + expiration))
             .signWith(key)
             .compact();
     }
 
-    public String extractUsername(String token) {
+    public String extractEmail(String token) {
         return Jwts.parser()
             .verifyWith(key)
             .build()
