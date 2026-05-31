@@ -54,6 +54,10 @@ public class Profile {
     @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProfileImage> images = new ArrayList<>();
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "profile_picture_id")
+    private ProfileImage profilePicture;
+
     @ElementCollection
     private List<AvailabilityDay> availability = new ArrayList<>();
 

@@ -14,6 +14,7 @@ public record CreateProfileRequest(
         @NotBlank String phoneNumber,
         @NotBlank String email,
         @Valid PricesDto prices,
+        ImageDto profilePicture,
         @NotEmpty List<ImageDto> images,
         @NotEmpty List<AvailabilityDto> availability,
         @NotEmpty List<String> categories
