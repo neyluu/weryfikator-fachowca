@@ -32,6 +32,7 @@ function Profile() {
     localization: "",
     phoneNumber: "",
     email: "",
+    profilePicture: "",
     prices: {
       consultation: {
         enabled: false,
@@ -49,12 +50,12 @@ function Profile() {
     images: [],
     availability: [
       /*
-      {
-        day: "Pon",
-        startTime: "00:00",
-        endTime: "09:00"
-      },
-    */
+            {
+              day: "Pon",
+              startTime: "00:00",
+              endTime: "09:00"
+            },
+          */
     ],
     categories: [],
   });
@@ -178,11 +179,34 @@ function Profile() {
     }));
   };
 
+  const handleAddProfilePicture = (e) => {
+    const file = e.target.files[0];
+    const photo = {
+      id: crypto.randomUUID(),
+      file: file,
+      url: URL.createObjectURL(file),
+    };
+
+    setFormData((prev) => ({
+      ...prev,
+      profilePicture: photo,
+    }));
+  };
+
   const removePhoto = (idToRemove) => {
     setFormData((prev) => {
       return {
         ...prev,
         images: prev.images.filter((photo) => photo.id !== idToRemove),
+      };
+    });
+  };
+
+  const removeProfilePicture = () => {
+    setFormData((prev) => {
+      return {
+        ...prev,
+        profilePicture: "",
       };
     });
   };
@@ -232,7 +256,7 @@ function Profile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
-    setProfileCreatedMessage("")
+    setProfileCreatedMessage("");
 
     console.log("FORM DATA", formData);
 
@@ -457,6 +481,57 @@ function Profile() {
             />
 
             <div className="text-gray-600 flex flex-col gap-3">
+              <p>Zdjęcie profilowe</p>
+
+              <div className="flex gap-3">
+                <label
+                  className="w-2/3 cursor-pointer border-2 border-dashed
+                          border-neutral-700 hover:border-neutral-300 transition
+                          rounded-xl p-6
+                          flex flex-col items-center
+                          justify-center text-neutral-700 hover:text-neutral-300"
+                >
+                  <span className="text-sm">Kliknij aby wybrać zdjęcie</span>
+                  <span className="text-xs opacity-70 mt-1">PNG, JPG</span>
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAddProfilePicture}
+                    className="hidden"
+                  />
+                </label>
+                <div className="w-1/3">
+                  <div className="relative w-full aspect-square rounded-md border border-neutral-800 overflow-hidden group">
+                    {formData.profilePicture ? (
+                      <>
+                        <img
+                          src={formData.profilePicture.url}
+                          alt="profile picture"
+                          className="w-full h-full object-cover"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={removeProfilePicture}
+                          className="absolute top-2 right-2 bg-black/70 hover:bg-red-500 text-white w-6 h-6 rounded-md opacity-0 group-hover:opacity-100 transition"
+                        >
+                          ×
+                        </button>
+                      </>
+                    ) : (
+                      <img
+                        src="/icons/profileIcon.svg"
+                        alt="default profile"
+                        className="w-full h-full object-contain p-6 opacity-70"
+                      />
+                    )}
+                  </div>
+                </div>{" "}
+              </div>
+            </div>
+
+            <div className="text-gray-600 flex flex-col gap-3">
               <p>Kategorie</p>
 
               <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2 pb-3">
@@ -469,11 +544,7 @@ function Profile() {
                       key={category}
                       onClick={() => toggleCategory(category)}
                       className={`
-                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm ${
-                          active
-                            ? "bg-brand text-neutral-100 border-brand"
-                            : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"
-                        }`}
+                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm ${active ? "bg-brand text-neutral-100 border-brand" : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"}`}
                     >
                       {category}
                     </button>
@@ -523,7 +594,10 @@ function Profile() {
 
               {[
                 { key: "consultation", label: "Konsultacja" },
-                { key: "hourly", label: "Stawka godzinowa" },
+                {
+                  key: "hourly",
+                  label: "Stawka godzinowa",
+                },
                 { key: "project", label: "Projekt" },
               ].map(({ key, label }) => {
                 const item = formData.prices[key];
@@ -533,21 +607,13 @@ function Profile() {
                 return (
                   <div
                     key={key}
-                    className={`p-4 rounded-xl border flex flex-col gap-3 transition ${
-                      disabled
-                        ? "bg-neutral-900 border-neutral-800 opacity-50"
-                        : "bg-neutral-900 border-neutral-700"
-                    }`}
+                    className={`p-4 rounded-xl border flex flex-col gap-3 transition ${disabled ? "bg-neutral-900 border-neutral-800 opacity-50" : "bg-neutral-900 border-neutral-700"}`}
                   >
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
                         onClick={() => togglePrice(key)}
-                        className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                          item.enabled
-                            ? "bg-yellow-400 border-yellow-400"
-                            : "border-neutral-500"
-                        }`}
+                        className={`w-5 h-5 rounded-full border flex items-center justify-center ${item.enabled ? "bg-yellow-400 border-yellow-400" : "border-neutral-500"}`}
                       >
                         {item.enabled && (
                           <div className="w-2 h-2 bg-black rounded-full" />
@@ -679,11 +745,7 @@ function Profile() {
                       type="button"
                       onClick={() => toggleDay(day)}
                       className={`
-                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm min-w-15 max-w-15 ${
-                          active
-                            ? "bg-brand text-neutral-100 border-brand"
-                            : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"
-                        }`}
+                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm min-w-15 max-w-15 ${active ? "bg-brand text-neutral-100 border-brand" : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"}`}
                     >
                       {day}
                     </button>
@@ -704,7 +766,9 @@ function Profile() {
                         type="time"
                         className="w-full"
                         disabled={!active}
-                        onChange={(e) => updateHour(day, e.target.value, "endTime")}
+                        onChange={(e) =>
+                          updateHour(day, e.target.value, "endTime")
+                        }
                       />
                     </div>
                   </div>

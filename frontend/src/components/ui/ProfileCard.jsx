@@ -23,7 +23,11 @@ function ProfileCard({ data }) {
         <div className="flex gap-4 justify-between">
           <div className="flex gap-4 items-start">
             <img
-              src="/icons/profileIcon.svg"
+              src={
+                profile.profilePicture
+                  ? profile.profilePicture.url
+                  : "/icons/profileIcon.svg"
+              }
               alt="Profil"
               className="w-32 h-32 border border-neutral-600 rounded-2xl bg-neutral-900 object-cover"
               draggable="false"
