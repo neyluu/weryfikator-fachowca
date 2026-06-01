@@ -269,6 +269,10 @@ function Profile() {
       return;
     }
 
+    if(!formData.profilePicture) {
+      formData.profilePicture = null;
+    }
+
     const token = localStorage.getItem("token");
 
     const processedImages = await Promise.all(
