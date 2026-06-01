@@ -6,255 +6,44 @@ import Button from "../components/ui/Button.jsx";
 import Input from "../components/ui/Input.jsx";
 import TextArea from "../components/ui/TextArea.jsx";
 import ProfileCard from "../components/ui/ProfileCard.jsx";
+import { useProfileForm } from "../features/profileCreator/Handlers.jsx";
+import { convertToBase64 } from "../features/profileCreator/Utils.jsx";
+import { validateForm } from "../features/profileCreator/Validation.jsx";
+import {
+  DAYS,
+  PRICE_LIMITS,
+  CATEGORIES,
+} from "../features/profileCreator/Constants.jsx";
 
 function Profile() {
   usePageTitle("Weryfikator Fachowca - Profil fachowca");
 
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
-
   const [userData, setUserData] = useState({});
+  const { user, loading } = useAuth();
   const isSpecialist = user?.role === "SPECIALIST";
-  const [profileCreation, setProfileCreation] = useState(() => {
-    const saved = localStorage.getItem("profileCreation");
-    return saved ? JSON.parse(saved) : false;
-  });
+
+  const [profileCreation, setProfileCreation] = useState(false);
+
   const [errorMessage, setErrorMessage] = useState("");
   const [profileCreatedMessage, setProfileCreatedMessage] = useState("");
+
   const [isProfilePreviewModalOpen, setIsProfilePreviewModalOpen] =
     useState(false);
-  const [savedHours, setSavedHours] = useState({});
 
-  const [formData, setFormData] = useState({
-    specialization: "",
-    description: "",
-    experience: "",
-    localization: "",
-    phoneNumber: "",
-    email: "",
-    profilePicture: "",
-    prices: {
-      consultation: {
-        enabled: false,
-        value: { min: 0, max: 0 },
-      },
-      hourly: {
-        enabled: false,
-        value: { min: 0, max: 0 },
-      },
-      project: {
-        enabled: false,
-        value: { min: 0, max: 0 },
-      },
-    },
-    images: [],
-    availability: [
-      /*
-            {
-              day: "Pon",
-              startTime: "00:00",
-              endTime: "09:00"
-            },
-          */
-    ],
-    categories: [],
-  });
-
-  const DAYS = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd"];
-
-  const PRICE_LIMITS = {
-    consultation: { min: 0, max: 10000 },
-    hourly: { min: 0, max: 25000 },
-    project: { min: 0, max: 100000 },
-  };
-
-  const CATEGORIES = [
-    "Murarstwo",
-    "Tynkowanie",
-    "Glazurnictwo",
-    "Dekarstwo",
-    "Elektryka",
-    "Hydraulika",
-    "Stolarstwo",
-    "Mechanika",
-    "Lakiernictwo",
-    "Wulkanizacja",
-    "Informatyka",
-    "Grafika",
-    "Fotografia",
-    "Księgowość",
-    "Prawo",
-    "Medycyna",
-    "Fizjoterapia",
-    "Kosmetologia",
-    "Fryzjerstwo",
-    "Dietetyka",
-    "Gastronomia",
-    "Ogrodnictwo",
-  ];
-
-  const toggleDay = (day) => {
-    setFormData((prev) => {
-      const existing = prev.availability.find((item) => item.day === day);
-
-      if (existing) {
-        setSavedHours((prevHours) => ({
-          ...prevHours,
-          [day]: {
-            startTime: existing.startTime,
-            endTime: existing.endTime,
-          },
-        }));
-
-        return {
-          ...prev,
-          availability: prev.availability.filter((item) => item.day !== day),
-        };
-      }
-
-      return {
-        ...prev,
-        availability: [
-          ...prev.availability,
-          {
-            day,
-            startTime: savedHours[day]?.startTime ?? "00:00",
-            endTime: savedHours[day]?.endTime ?? "23:59",
-          },
-        ],
-      };
-    });
-  };
-
-  const updateHour = (day, value, type) => {
-    setFormData((prev) => ({
-      ...prev,
-      availability: prev.availability.map((item) =>
-        item.day === day
-          ? {
-              ...item,
-              [type]: value,
-            }
-          : item,
-      ),
-    }));
-  };
-
-  const toggleCategory = (category) => {
-    setFormData((prev) => {
-      return {
-        ...prev,
-        categories: prev.categories.includes(category)
-          ? prev.categories.filter((c) => c !== category)
-          : [...prev.categories, category],
-      };
-    });
-  };
-
-  const togglePrice = (key) => {
-    setFormData((prev) => ({
-      ...prev,
-      prices: {
-        ...prev.prices,
-        [key]: {
-          ...prev.prices[key],
-          enabled: !prev.prices[key].enabled,
-        },
-      },
-    }));
-  };
-
-  const handleAddPhotos = (e) => {
-    const chosenFiles = Array.from(e.target.files);
-
-    const newPhotos = chosenFiles.map((file) => ({
-      id: crypto.randomUUID(),
-      file: file,
-      url: URL.createObjectURL(file),
-    }));
-
-    setFormData((prev) => ({
-      ...prev,
-      images: [...prev.images, ...newPhotos],
-    }));
-  };
-
-  const handleAddProfilePicture = async (e) => {
-    const file = e.target.files[0];
-
-    const base64 = await convertToBase64(file);
-
-    const photo = {
-      id: crypto.randomUUID(),
-      file: file,
-      url: base64,
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      profilePicture: photo,
-    }));
-  };
-
-  const removePhoto = (idToRemove) => {
-    setFormData((prev) => {
-      return {
-        ...prev,
-        images: prev.images.filter((photo) => photo.id !== idToRemove),
-      };
-    });
-  };
-
-  const removeProfilePicture = () => {
-    setFormData((prev) => {
-      return {
-        ...prev,
-        profilePicture: "",
-      };
-    });
-  };
-
-  const updatePrice = (key, field, value) => {
-    const num = Number(value);
-
-    setFormData((prev) => {
-      const current = prev.prices[key];
-
-      let min = current.value.min;
-      let max = current.value.max;
-
-      if (field === "min") min = num;
-      if (field === "max") max = num;
-
-      if (min > max) {
-        if (field === "min") max = min;
-        else min = max;
-      }
-
-      return {
-        ...prev,
-        prices: {
-          ...prev.prices,
-          [key]: {
-            ...current,
-            value: {
-              min,
-              max,
-            },
-          },
-        },
-      };
-    });
-  };
-
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-  };
+  const {
+    formData,
+    setFormData,
+    toggleDay,
+    updateHour,
+    toggleCategory,
+    togglePrice,
+    handleAddPhotos,
+    handleAddProfilePicture,
+    removePhoto,
+    removeProfilePicture,
+    updatePrice,
+  } = useProfileForm();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -263,13 +52,13 @@ function Profile() {
 
     console.log("FORM DATA", formData);
 
-    const validationResult = validateForm();
+    const validationResult = validateForm(formData);
     if (!validationResult.success) {
       setErrorMessage(validationResult.message);
       return;
     }
 
-    if(!formData.profilePicture) {
+    if (!formData.profilePicture) {
       formData.profilePicture = null;
     }
 
@@ -310,109 +99,6 @@ function Profile() {
     console.log("Created profile:", data);
     setProfileCreatedMessage("Utworzono profil!");
   };
-
-  const validateForm = () => {
-    if (!formData.specialization.trim()) {
-      return {
-        success: false,
-        message: "Specjalizacja jest wymagana.",
-      };
-    }
-
-    if (!formData.description.trim()) {
-      return {
-        success: false,
-        message: "Opis jest wymagany.",
-      };
-    }
-
-    if (!formData.experience.trim()) {
-      return {
-        success: false,
-        message: "Doświadczenie jest wymagane.",
-      };
-    }
-
-    if (!formData.localization.trim()) {
-      return {
-        success: false,
-        message: "Lokalizacja jest wymagana.",
-      };
-    }
-
-    if (!formData.phoneNumber.trim()) {
-      return {
-        success: false,
-        message: "Numer telefonu jest wymagany.",
-      };
-    }
-
-    if (!formData.email.trim()) {
-      return {
-        success: false,
-        message: "Adres e-mail jest wymagany.",
-      };
-    }
-
-    const phoneRegex = /^(\+48)?[\s-]?(\d{3}[\s-]?\d{3}[\s-]?\d{3})$/;
-
-    if (!phoneRegex.test(formData.phoneNumber)) {
-      return {
-        success: false,
-        message: "Numer telefonu ma nieprawidłowy format.",
-      };
-    }
-
-    const hasEnabledPrice = Object.values(formData.prices).some(
-      (price) => price.enabled,
-    );
-
-    if (!hasEnabledPrice) {
-      return {
-        success: false,
-        message: "Musisz wybrać przynajmniej jeden rodzaj wyceny.",
-      };
-    }
-
-    if (formData.images.length < 1 || formData.images.length > 8) {
-      return {
-        success: false,
-        message: "Liczba zdjęć musi być między 1 a 8.",
-      };
-    }
-
-    if (!formData.availability.length) {
-      return {
-        success: false,
-        message: "Musisz wybrać przynajmniej jeden dzień.",
-      };
-    }
-
-    for (const item of formData.availability) {
-      if (item.startTime >= item.endTime) {
-        return {
-          success: false,
-          message:
-            "Godzina rozpoczęcia musi być wcześniejsza niż godzina zakończenia.",
-        };
-      }
-    }
-
-    if (formData.categories.length < 1 || formData.categories.length > 5) {
-      return {
-        success: false,
-        message: "Liczba kategorii musi być między 1 a 5.",
-      };
-    }
-
-    return {
-      success: true,
-    };
-  };
-
-  useEffect(() => {
-    localStorage.setItem("profileCreation", JSON.stringify(profileCreation));
-  }, [profileCreation]);
 
   useEffect(() => {
     if (!loading && user && !isSpecialist) {
