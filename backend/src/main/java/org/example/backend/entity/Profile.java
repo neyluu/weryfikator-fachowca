@@ -21,7 +21,10 @@ public class Profile {
     private Long id;
 
     private String specialization;
+
+    @Lob
     private String description;
+
     private String experience;
     private String localization;
     private String phoneNumber;

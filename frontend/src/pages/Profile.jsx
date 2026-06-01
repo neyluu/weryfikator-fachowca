@@ -179,12 +179,15 @@ function Profile() {
     }));
   };
 
-  const handleAddProfilePicture = (e) => {
+  const handleAddProfilePicture = async (e) => {
     const file = e.target.files[0];
+
+    const base64 = await convertToBase64(file);
+
     const photo = {
       id: crypto.randomUUID(),
       file: file,
-      url: URL.createObjectURL(file),
+      url: base64,
     };
 
     setFormData((prev) => ({

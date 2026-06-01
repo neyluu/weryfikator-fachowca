@@ -72,11 +72,7 @@ public class ProfileController {
                 p.value().max()
         ));
 
-        if (dto.profilePicture() != null
-            && dto.profilePicture().url() != null
-            && dto.profilePicture().url().contains("base64")
-        ) {
-
+        if (dto.profilePicture() != null) {
             List<ProfileImage> profilePicture = processImages(List.of(dto.profilePicture()), profile);
 
             if (!profilePicture.isEmpty()) {
