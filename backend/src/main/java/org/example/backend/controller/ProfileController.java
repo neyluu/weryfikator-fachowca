@@ -2,7 +2,9 @@ package org.example.backend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.backend.dto.request.CreateProfileRequest;
+import org.example.backend.dto.request.profile.CreateProfileRequest;
+import org.example.backend.dto.request.profile.ImageDto;
+import org.example.backend.dto.request.profile.PriceDto;
 import org.example.backend.entity.*;
 import org.example.backend.repository.ProfileRepository;
 import org.example.backend.repository.UserRepository;
@@ -51,21 +53,21 @@ public class ProfileController {
         profile.setPhoneNumber(dto.phoneNumber());
         profile.setEmail(dto.email());
 
-        CreateProfileRequest.PriceDto c = dto.prices().consultation();
+        PriceDto c = dto.prices().consultation();
         profile.setConsultationEnabled(c.enabled());
         profile.setConsultationPrice(new PriceRange(
                 c.value().min(),
                 c.value().max()
         ));
 
-        CreateProfileRequest.PriceDto h = dto.prices().hourly();
+        PriceDto h = dto.prices().hourly();
         profile.setHourlyEnabled(h.enabled());
         profile.setHourlyPrice(new PriceRange(
                 h.value().min(),
                 h.value().max()
         ));
 
-        CreateProfileRequest.PriceDto p = dto.prices().project();
+        PriceDto p = dto.prices().project();
         profile.setProjectEnabled(p.enabled());
         profile.setProjectPrice(new PriceRange(
                 p.value().min(),
@@ -108,7 +110,7 @@ public class ProfileController {
         );
     }
 
-    private List<ProfileImage> processImages(List<CreateProfileRequest.ImageDto> images, Profile profile) {
+    private List<ProfileImage> processImages(List<ImageDto> images, Profile profile) {
         List<ProfileImage> profileImages = new ArrayList<>();
 
         for (var imgDto : images) {
