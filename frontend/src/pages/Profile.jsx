@@ -25,6 +25,7 @@ function Profile() {
 
   const [profileCreation, setProfileCreation] = useState(false);
   const [profileCreated, setProfileCreated] = useState(false);
+  const [profileEditing, setProfileEditing] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState("");
   const [profileCreatedMessage, setProfileCreatedMessage] = useState("");
@@ -46,12 +47,11 @@ function Profile() {
     updatePrice,
   } = useProfileForm();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, mode = "create") => {
     e.preventDefault();
-    setErrorMessage("");
-    setProfileCreatedMessage("");
 
-    console.log("FORM DATA", formData);
+    setErrorMessage("");
+    // setProfileCreatedMessage("");
 
     const validationResult = validateForm(formData);
     if (!validationResult.success) {
@@ -59,37 +59,36 @@ function Profile() {
       return;
     }
 
-    if (!formData.profilePicture) {
-      formData.profilePicture = null;
-    }
-
     const token = localStorage.getItem("token");
 
     const processedImages = await Promise.all(
       formData.images.map(async (img) => {
         if (img.file instanceof File) {
-          const base64String = await convertToBase64(img.file);
+          const base64 = await convertToBase64(img.file);
           return {
             id: img.id,
             file: {},
-            url: base64String,
+            url: base64,
           };
         }
         return img;
       }),
     );
 
-    const res = await fetch("/api/profile/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+    const res = await fetch(
+      mode === "edit" ? "/api/profile/update" : "/api/profile/create",
+      {
+        method: mode === "edit" ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...formData,
+          images: processedImages,
+        }),
       },
-      body: JSON.stringify({
-        ...formData,
-        images: processedImages,
-      }),
-    });
+    );
 
     if (!res.ok) {
       setErrorMessage("Internal server error");
@@ -97,8 +96,14 @@ function Profile() {
     }
 
     const data = await res.json();
-    console.log("Created profile:", data);
-    setProfileCreatedMessage("Utworzono profil!");
+
+    // setProfileCreatedMessage(
+    //   mode === "edit" ? "Edytowano profil!" : "Utworzono profil!",
+    // );
+
+    setProfileCreation(false);
+    setProfileEditing(false);
+    setProfileCreated(true);
   };
 
   useEffect(() => {
@@ -127,8 +132,8 @@ function Profile() {
 
         const data = await res.json();
         console.log("PROFILE test:", data);
-        setProfileCreated(true)
-        setFormData(data)
+        setProfileCreated(true);
+        setFormData(data);
       } catch (err) {
         console.error("Error fetching profile:", err);
       }
@@ -166,7 +171,7 @@ function Profile() {
 
   return (
     <div className="w-full">
-      {profileCreated && (
+      {profileCreated && !profileEditing && (
         <div>
           <div className="flex-col flex gap-6 mb-6">
             <div className="p-6 bg-neutral-800/25 border border-neutral-800 rounded-3xl">
@@ -185,7 +190,9 @@ function Profile() {
               <Button
                 className="flex-1"
                 type="button"
-                onClick={() => setProfileCreation(!profileCreation)}
+                onClick={() => {
+                  setProfileEditing(true);
+                }}
               >
                 Edytuj
               </Button>
@@ -207,13 +214,20 @@ function Profile() {
         </div>
       )}
 
-      {profileCreation && (
+      {(profileCreation || profileEditing) && (
         <div className="flex-col flex gap-6">
           <div className="p-6 bg-neutral-800/25 border border-neutral-800 rounded-3xl mb-5">
-            Wpisz dane poniżej aby utworzyć profil
+            {profileEditing
+              ? "Edytuj dane poniżej aby edytować profil"
+              : "Wpisz dane poniżej aby utworzyć profil"}
           </div>
 
-          <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+          <form
+            className="flex flex-col gap-3"
+            onSubmit={(e) =>
+              handleSubmit(e, profileEditing ? "edit" : "create")
+            }
+          >
             <Input
               type="text"
               placeholder="Specjalizacja"

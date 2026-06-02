@@ -1,14 +1,13 @@
 package org.example.backend.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.request.profile.CreateProfileRequest;
-import org.example.backend.dto.request.profile.ImageDto;
-import org.example.backend.dto.request.profile.PriceDto;
 import org.example.backend.dto.request.profile.ProfileDto;
-import org.example.backend.entity.*;
+import org.example.backend.entity.Profile;
+import org.example.backend.entity.User;
 import org.example.backend.repository.ProfileRepository;
 import org.example.backend.repository.UserRepository;
+import org.example.backend.service.ProfileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,97 +15,50 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/profile")
 @RequiredArgsConstructor
 public class ProfileController {
-
+    private final ProfileService profileService = new ProfileService();
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
 
     @PostMapping("/create")
-    public ResponseEntity<?> create(
-            @Valid @RequestBody CreateProfileRequest dto,
-            Authentication authentication
-    ) {
+    public ResponseEntity<?> create(@RequestBody CreateProfileRequest dto, Authentication auth) {
 
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "User with email " + email + " was not found"
-                ));
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow();
 
         Profile profile = new Profile();
 
-        profile.setSpecialization(dto.specialization());
-        profile.setDescription(dto.description());
-        profile.setExperience(dto.experience());
-        profile.setLocalization(dto.localization());
-        profile.setPhoneNumber(dto.phoneNumber());
-        profile.setEmail(dto.email());
+        profileService.apply(profile, dto);
+        profileService.applyImages(profile, dto.images());
+        profileService.applyProfilePicture(profile, dto.profilePicture());
 
-        PriceDto c = dto.prices().consultation();
-        profile.setConsultationEnabled(c.enabled());
-        profile.setConsultationPrice(new PriceRange(
-                c.value().min(),
-                c.value().max()
-        ));
-
-        PriceDto h = dto.prices().hourly();
-        profile.setHourlyEnabled(h.enabled());
-        profile.setHourlyPrice(new PriceRange(
-                h.value().min(),
-                h.value().max()
-        ));
-
-        PriceDto p = dto.prices().project();
-        profile.setProjectEnabled(p.enabled());
-        profile.setProjectPrice(new PriceRange(
-                p.value().min(),
-                p.value().max()
-        ));
-
-        if (dto.profilePicture() != null) {
-            List<ProfileImage> profilePicture = processImages(List.of(dto.profilePicture()), profile);
-
-            if (!profilePicture.isEmpty()) {
-                profile.setProfilePicture(profilePicture.getFirst());
-            }
-        }
-
-        try {
-            List<ProfileImage> profileImages = processImages(dto.images(), profile);
-            profile.setImages(profileImages);
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Invalid image data: " + e.getMessage()));
-        }
-
-        List<AvailabilityDay> availability = dto.availability()
-                .stream()
-                .map(item -> new AvailabilityDay(
-                        item.day(),
-                        item.startTime(),
-                        item.endTime()
-                )).toList();
-
-        profile.setAvailability(availability);
         profile.setUser(user);
-        profile.setCategories(dto.categories());
 
         profileRepository.save(profile);
 
-        return ResponseEntity.ok(
-                Map.of("message", "Profile created")
-        );
+        return ResponseEntity.ok(Map.of("message", "created"));
+    }
+
+    @PutMapping("/update")
+    @Transactional
+    public ResponseEntity<?> update(@RequestBody CreateProfileRequest dto, Authentication auth) {
+
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow();
+
+        Profile profile = profileRepository.findByUser(user)
+                .orElseThrow();
+
+        profileService.apply(profile, dto);
+        profileService.applyImages(profile, dto.images());
+        profileService.applyProfilePicture(profile, dto.profilePicture());
+
+        return ResponseEntity.ok(Map.of("message", "updated"));
     }
 
     @Transactional(readOnly = true)
@@ -128,35 +80,5 @@ public class ProfileController {
                 ));
 
         return ProfileDto.of(profile);
-    }
-
-    private List<ProfileImage> processImages(List<ImageDto> images, Profile profile) {
-        List<ProfileImage> profileImages = new ArrayList<>();
-
-        for (var imgDto : images) {
-            String base64Data = imgDto.url();
-
-            if (base64Data != null && base64Data.contains(",")) {
-                try {
-                    String[] parts = base64Data.split(",");
-                    String header = parts[0];
-                    String base64BytesStr = parts[1];
-
-                    String extension = "jpg";
-                    if (header.contains("image/png")) extension = "png";
-                    else if (header.contains("image/gif")) extension = "gif";
-                    else if (header.contains("image/webp")) extension = "webp";
-
-                    byte[] imageBytes = Base64.getDecoder().decode(base64BytesStr);
-                    ProfileImage profileImage = new ProfileImage(imageBytes, extension, profile);
-
-                    profileImages.add(profileImage);
-                } catch (Exception e) {
-                    throw new RuntimeException("Failed to decode base64 image data", e);
-                }
-            }
-        }
-
-        return profileImages;
     }
 }
