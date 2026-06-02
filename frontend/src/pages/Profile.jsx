@@ -24,6 +24,7 @@ function Profile() {
   const isSpecialist = user?.role === "SPECIALIST";
 
   const [profileCreation, setProfileCreation] = useState(false);
+  const [profileCreated, setProfileCreated] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState("");
   const [profileCreatedMessage, setProfileCreatedMessage] = useState("");
@@ -107,6 +108,36 @@ function Profile() {
   }, [loading, user, isSpecialist, navigate]);
 
   useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch("/api/profile/me", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          console.error("Failed to fetch profile");
+          return;
+        }
+
+        const data = await res.json();
+        console.log("PROFILE test:", data);
+        setProfileCreated(true)
+        setFormData(data)
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    }
+
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
     async function fetchUserData() {
       const token = localStorage.getItem("token");
 
@@ -135,7 +166,35 @@ function Profile() {
 
   return (
     <div className="w-full">
-      {!profileCreation && (
+      {profileCreated && (
+        <div>
+          <div className="flex-col flex gap-6 mb-6">
+            <div className="p-6 bg-neutral-800/25 border border-neutral-800 rounded-3xl">
+              Posiadasz już profil fachowca
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                className="flex-1"
+                look={"secondary"}
+                type="button"
+                onClick={() => setIsProfilePreviewModalOpen(true)}
+              >
+                Podgląd
+              </Button>
+              <Button
+                className="flex-1"
+                type="button"
+                onClick={() => setProfileCreation(!profileCreation)}
+              >
+                Edytuj
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!profileCreation && !profileCreated && (
         <div className="flex-col flex gap-6">
           <div className="p-6 bg-neutral-800/25 border border-neutral-800 rounded-3xl">
             Widzę, że jesteś nowym fachowcem, utwórz profil, by inni mogli cię

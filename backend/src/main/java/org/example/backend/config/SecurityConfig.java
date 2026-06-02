@@ -31,10 +31,9 @@ public class SecurityConfig {
                 auth
                     .requestMatchers("/auth/**")
                     .permitAll()
-                    .requestMatchers("/admin/**")
-                    .hasRole("ADMIN")
-                    .requestMatchers("/specialist/**")
-                    .hasAnyRole("ADMIN", "SPECIALIST")
+                    .requestMatchers("/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/specialist/**").hasAnyRole("ADMIN", "SPECIALIST")
+                    .requestMatchers("/profile/**").authenticated()
                     .anyRequest()
                     .authenticated()
             )

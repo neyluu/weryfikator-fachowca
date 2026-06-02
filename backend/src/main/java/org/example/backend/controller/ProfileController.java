@@ -5,16 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.request.profile.CreateProfileRequest;
 import org.example.backend.dto.request.profile.ImageDto;
 import org.example.backend.dto.request.profile.PriceDto;
+import org.example.backend.dto.request.profile.ProfileDto;
 import org.example.backend.entity.*;
 import org.example.backend.repository.ProfileRepository;
 import org.example.backend.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -108,6 +107,27 @@ public class ProfileController {
         return ResponseEntity.ok(
                 Map.of("message", "Profile created")
         );
+    }
+
+    @Transactional(readOnly = true)
+    @GetMapping("/me")
+    public ProfileDto get(Authentication authentication) {
+        System.out.println(authentication);
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User with email " + email + " was not found"
+                ));
+
+        Profile profile = profileRepository.findByUser(user)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Profile not found"
+                ));
+
+        return ProfileDto.of(profile);
     }
 
     private List<ProfileImage> processImages(List<ImageDto> images, Profile profile) {
