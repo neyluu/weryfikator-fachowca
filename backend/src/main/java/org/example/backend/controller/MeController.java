@@ -1,7 +1,7 @@
 package org.example.backend.controller;
 
 import jakarta.validation.Valid;
-import org.example.backend.dto.request.UpdateProfileRequest;
+import org.example.backend.dto.request.UpdateAccountRequest;
 import org.example.backend.dto.response.AuthResponse;
 import org.example.backend.dto.response.UserDto;
 import org.example.backend.service.UserService;
@@ -37,7 +37,7 @@ public class MeController {
 
     @PatchMapping("/update")
     public ResponseEntity<AuthResponse> update(
-        @Valid @RequestBody UpdateProfileRequest dto,
+        @Valid @RequestBody UpdateAccountRequest dto,
         Authentication authentication
     ) {
         return ResponseEntity.ok(
