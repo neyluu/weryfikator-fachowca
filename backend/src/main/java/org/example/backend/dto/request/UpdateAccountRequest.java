@@ -2,7 +2,7 @@ package org.example.backend.dto.request;
 
 import jakarta.validation.constraints.*;
 
-public record UpdateProfileRequest(
+public record UpdateAccountRequest(
     @Size(min = 3, max = 100)
     @Pattern(
         regexp = "^[\\p{L}]+([- ][\\p{L}]+)+$",

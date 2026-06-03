@@ -6,189 +6,57 @@ import Button from "../components/ui/Button.jsx";
 import Input from "../components/ui/Input.jsx";
 import TextArea from "../components/ui/TextArea.jsx";
 import ProfileCard from "../components/ui/ProfileCard.jsx";
+import { useProfileForm } from "../features/profileCreator/Handlers.jsx";
+import { convertToBase64 } from "../features/profileCreator/Utils.jsx";
+import { validateForm } from "../features/profileCreator/Validation.jsx";
+import {
+  DAYS,
+  PRICE_LIMITS,
+  CATEGORIES,
+} from "../features/profileCreator/Constants.jsx";
 
 function Profile() {
   usePageTitle("Weryfikator Fachowca - Profil fachowca");
 
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
-
   const [userData, setUserData] = useState({});
+  const { user, loading } = useAuth();
   const isSpecialist = user?.role === "SPECIALIST";
-  const [profileCreation, setProfileCreation] = useState(() => {
-    const saved = localStorage.getItem("profileCreation");
-    return saved ? JSON.parse(saved) : false;
-  });
+
+  const [profileCreation, setProfileCreation] = useState(false);
+  const [profileCreated, setProfileCreated] = useState(false);
+  const [profileEditing, setProfileEditing] = useState(false);
+
   const [errorMessage, setErrorMessage] = useState("");
+  const [profileCreatedMessage, setProfileCreatedMessage] = useState("");
+
   const [isProfilePreviewModalOpen, setIsProfilePreviewModalOpen] =
     useState(false);
 
-  const [formData, setFormData] = useState({
-    specialization: "",
-    description: "",
-    experience: "",
-    localization: "",
-    phoneNumber: "",
-    email: "",
-    prices: {
-      consultation: {
-        enabled: false,
-        value: { min: 0, max: 0 },
-      },
-      hourly: {
-        enabled: false,
-        value: { min: 0, max: 0 },
-      },
-      project: {
-        enabled: false,
-        value: { min: 0, max: 0 },
-      },
-    },
-    images: [],
-    hourStart: 0,
-    hourEnd: 0,
-    days: [],
-    categories: [],
-  });
+  const {
+    formData,
+    setFormData,
+    toggleDay,
+    updateHour,
+    toggleCategory,
+    togglePrice,
+    handleAddPhotos,
+    handleAddProfilePicture,
+    removePhoto,
+    removeProfilePicture,
+    updatePrice,
+  } = useProfileForm();
 
-  const DAYS = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd"];
-
-  const PRICE_LIMITS = {
-    consultation: { min: 0, max: 10000 },
-    hourly: { min: 0, max: 25000 },
-    project: { min: 0, max: 100000 },
-  };
-
-  const CATEGORIES = [
-    "Murarstwo",
-    "Tynkowanie",
-    "Glazurnictwo",
-    "Dekarstwo",
-    "Elektryka",
-    "Hydraulika",
-    "Stolarstwo",
-    "Mechanika",
-    "Lakiernictwo",
-    "Wulkanizacja",
-    "Informatyka",
-    "Grafika",
-    "Fotografia",
-    "Księgowość",
-    "Prawo",
-    "Medycyna",
-    "Fizjoterapia",
-    "Kosmetologia",
-    "Fryzjerstwo",
-    "Dietetyka",
-    "Gastronomia",
-    "Ogrodnictwo",
-  ];
-
-  const toggleDay = (day) => {
-    setFormData((prev) => ({
-      ...prev,
-      days: prev.days.includes(day)
-        ? prev.days.filter((d) => d !== day)
-        : [...prev.days, day],
-    }));
-  };
-
-  const toggleCategory = (category) => {
-    setFormData((prev) => {
-      return {
-        ...prev,
-        categories: prev.categories.includes(category)
-          ? prev.categories.filter((c) => c !== category)
-          : [...prev.categories, category],
-      };
-    });
-  };
-
-  const togglePrice = (key) => {
-    setFormData((prev) => ({
-      ...prev,
-      prices: {
-        ...prev.prices,
-        [key]: {
-          ...prev.prices[key],
-          enabled: !prev.prices[key].enabled,
-        },
-      },
-    }));
-  };
-
-  const handleAddPhotos = (e) => {
-    const chosenFiles = Array.from(e.target.files);
-
-    const newPhotos = chosenFiles.map((file) => ({
-      id: crypto.randomUUID(),
-      file: file,
-      url: URL.createObjectURL(file),
-    }));
-
-    setFormData((prev) => ({
-      ...prev,
-      images: [...prev.images, ...newPhotos],
-    }));
-  };
-
-  const removePhoto = (idToRemove) => {
-    setFormData((prev) => {
-      return {
-        ...prev,
-        images: prev.images.filter((photo) => photo.id !== idToRemove),
-      };
-    });
-  };
-
-  const updatePrice = (key, field, value) => {
-    const num = Number(value);
-
-    setFormData((prev) => {
-      const current = prev.prices[key];
-
-      let min = current.min;
-      let max = current.max;
-
-      if (field === "min") min = num;
-      if (field === "max") max = num;
-
-      if (min > max) {
-        if (field === "min") max = min;
-        else min = max;
-      }
-
-      return {
-        ...prev,
-        prices: {
-          ...prev.prices,
-          [key]: {
-            ...current,
-            min,
-            max,
-          },
-        },
-      };
-    });
-  };
-
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, mode = "create") => {
     e.preventDefault();
 
-    console.log("FORM DATA", formData);
+    setErrorMessage("");
+    // setProfileCreatedMessage("");
 
-    const validationResult = validateForm();
+    const validationResult = validateForm(formData);
     if (!validationResult.success) {
       setErrorMessage(validationResult.message);
+      return;
     }
 
     const token = localStorage.getItem("token");
@@ -196,139 +64,47 @@ function Profile() {
     const processedImages = await Promise.all(
       formData.images.map(async (img) => {
         if (img.file instanceof File) {
-          const base64String = await convertToBase64(img.file);
+          const base64 = await convertToBase64(img.file);
           return {
             id: img.id,
             file: {},
-            url: base64String,
+            url: base64,
           };
         }
         return img;
       }),
     );
 
-    const res = await fetch("/api/profile/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+    const res = await fetch(
+      mode === "edit" ? "/api/profile/update" : "/api/profile/create",
+      {
+        method: mode === "edit" ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...formData,
+          images: processedImages,
+        }),
       },
-      body: JSON.stringify({
-        ...formData,
-        images: processedImages,
-      }),
-    });
-
-    const data = await res.json();
+    );
 
     if (!res.ok) {
       setErrorMessage("Internal server error");
       return;
     }
 
-    console.log("Created profile:", data);
+    const data = await res.json();
+
+    // setProfileCreatedMessage(
+    //   mode === "edit" ? "Edytowano profil!" : "Utworzono profil!",
+    // );
+
+    setProfileCreation(false);
+    setProfileEditing(false);
+    setProfileCreated(true);
   };
-
-  const validateForm = () => {
-    if (!formData.specialization.trim()) {
-      return {
-        success: false,
-        message: "Specjalizacja jest wymagana.",
-      };
-    }
-
-    if (!formData.description.trim()) {
-      return {
-        success: false,
-        message: "Opis jest wymagany.",
-      };
-    }
-
-    if (!formData.experience.trim()) {
-      return {
-        success: false,
-        message: "Doświadczenie jest wymagane.",
-      };
-    }
-
-    if (!formData.localization.trim()) {
-      return {
-        success: false,
-        message: "Lokalizacja jest wymagana.",
-      };
-    }
-
-    if (!formData.phoneNumber.trim()) {
-      return {
-        success: false,
-        message: "Numer telefonu jest wymagany.",
-      };
-    }
-
-    if (!formData.email.trim()) {
-      return {
-        success: false,
-        message: "Adres e-mail jest wymagany.",
-      };
-    }
-
-    const phoneRegex = /^(\+48)?[\s-]?(\d{3}[\s-]?\d{3}[\s-]?\d{3})$/;
-
-    if (!phoneRegex.test(formData.phoneNumber)) {
-      return {
-        success: false,
-        message: "Numer telefonu ma nieprawidłowy format.",
-      };
-    }
-
-    const hasEnabledPrice = Object.values(formData.prices).some(
-      (price) => price.enabled,
-    );
-
-    if (!hasEnabledPrice) {
-      return {
-        success: false,
-        message: "Musisz wybrać przynajmniej jeden rodzaj wyceny.",
-      };
-    }
-
-    if (formData.images.length < 1 || formData.images.length > 8) {
-      return {
-        success: false,
-        message: "Liczba zdjęć musi być między 1 a 8.",
-      };
-    }
-
-    if (formData.hourStart >= formData.hourEnd) {
-      return {
-        success: false,
-        message:
-          "Godzina rozpoczęcia musi być wcześniejsza niż godzina zakończenia.",
-      };
-    }
-
-    if (!formData.days.length) {
-      return {
-        success: false,
-        message: "Musisz wybrać przynajmniej jeden dzień.",
-      };
-    }
-
-    if (formData.categories.length < 1 || formData.categories.length > 5) {
-      return {
-        success: false,
-        message: "Liczba kategorii musi być między 1 a 5.",
-      };
-    }
-
-    return {
-      success: true,
-    };
-  };
-
-  useEffect(() => {
-    localStorage.setItem("profileCreation", JSON.stringify(profileCreation));
-  }, [profileCreation]);
 
   useEffect(() => {
     if (!loading && user && !isSpecialist) {
@@ -337,10 +113,38 @@ function Profile() {
   }, [loading, user, isSpecialist, navigate]);
 
   useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch("/api/profile/me", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          console.error("Failed to fetch profile");
+          return;
+        }
+
+        const data = await res.json();
+        console.log("PROFILE test:", data);
+        setProfileCreated(true);
+        setFormData(data);
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    }
+
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
     async function fetchUserData() {
       const token = localStorage.getItem("token");
-
-      console.log(token)
 
       const res = await fetch("/api/me/get", {
         method: "GET",
@@ -350,14 +154,14 @@ function Profile() {
         },
       });
 
-      if(!res.ok) {
+      if (!res.ok) {
         // TODO - probably should display some error or sth
-        console.log("Failed to load user data")
+        console.log("Failed to load user data");
         return;
       }
 
-      const data = await res.json()
-      setUserData(data)
+      const data = await res.json();
+      setUserData(data);
     }
 
     fetchUserData();
@@ -367,7 +171,37 @@ function Profile() {
 
   return (
     <div className="w-full">
-      {!profileCreation && (
+      {profileCreated && !profileEditing && (
+        <div>
+          <div className="flex-col flex gap-6 mb-6">
+            <div className="p-6 bg-neutral-800/25 border border-neutral-800 rounded-3xl">
+              Posiadasz już profil fachowca
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                className="flex-1"
+                look={"secondary"}
+                type="button"
+                onClick={() => setIsProfilePreviewModalOpen(true)}
+              >
+                Podgląd
+              </Button>
+              <Button
+                className="flex-1"
+                type="button"
+                onClick={() => {
+                  setProfileEditing(true);
+                }}
+              >
+                Edytuj
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!profileCreation && !profileCreated && (
         <div className="flex-col flex gap-6">
           <div className="p-6 bg-neutral-800/25 border border-neutral-800 rounded-3xl">
             Widzę, że jesteś nowym fachowcem, utwórz profil, by inni mogli cię
@@ -380,13 +214,20 @@ function Profile() {
         </div>
       )}
 
-      {profileCreation && (
+      {(profileCreation || profileEditing) && (
         <div className="flex-col flex gap-6">
           <div className="p-6 bg-neutral-800/25 border border-neutral-800 rounded-3xl mb-5">
-            Wpisz dane poniżej aby utworzyć profil
+            {profileEditing
+              ? "Edytuj dane poniżej aby edytować profil"
+              : "Wpisz dane poniżej aby utworzyć profil"}
           </div>
 
-          <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+          <form
+            className="flex flex-col gap-3"
+            onSubmit={(e) =>
+              handleSubmit(e, profileEditing ? "edit" : "create")
+            }
+          >
             <Input
               type="text"
               placeholder="Specjalizacja"
@@ -406,6 +247,57 @@ function Profile() {
             />
 
             <div className="text-gray-600 flex flex-col gap-3">
+              <p>Zdjęcie profilowe</p>
+
+              <div className="flex gap-3">
+                <label
+                  className="w-2/3 cursor-pointer border-2 border-dashed
+                          border-neutral-700 hover:border-neutral-300 transition
+                          rounded-xl p-6
+                          flex flex-col items-center
+                          justify-center text-neutral-700 hover:text-neutral-300"
+                >
+                  <span className="text-sm">Kliknij aby wybrać zdjęcie</span>
+                  <span className="text-xs opacity-70 mt-1">PNG, JPG</span>
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAddProfilePicture}
+                    className="hidden"
+                  />
+                </label>
+                <div className="w-1/3">
+                  <div className="relative w-full aspect-square rounded-md border border-neutral-800 overflow-hidden group">
+                    {formData.profilePicture ? (
+                      <>
+                        <img
+                          src={formData.profilePicture.url}
+                          alt="profile picture"
+                          className="w-full h-full object-cover"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={removeProfilePicture}
+                          className="absolute top-2 right-2 bg-black/70 hover:bg-red-500 text-white w-6 h-6 rounded-md opacity-0 group-hover:opacity-100 transition"
+                        >
+                          ×
+                        </button>
+                      </>
+                    ) : (
+                      <img
+                        src="/icons/profileIcon.svg"
+                        alt="default profile"
+                        className="w-full h-full object-contain p-6 opacity-70"
+                      />
+                    )}
+                  </div>
+                </div>{" "}
+              </div>
+            </div>
+
+            <div className="text-gray-600 flex flex-col gap-3">
               <p>Kategorie</p>
 
               <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2 pb-3">
@@ -418,11 +310,7 @@ function Profile() {
                       key={category}
                       onClick={() => toggleCategory(category)}
                       className={`
-                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm ${
-                          active
-                            ? "bg-brand text-neutral-100 border-brand"
-                            : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"
-                        }`}
+                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm ${active ? "bg-brand text-neutral-100 border-brand" : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"}`}
                     >
                       {category}
                     </button>
@@ -472,7 +360,10 @@ function Profile() {
 
               {[
                 { key: "consultation", label: "Konsultacja" },
-                { key: "hourly", label: "Stawka godzinowa" },
+                {
+                  key: "hourly",
+                  label: "Stawka godzinowa",
+                },
                 { key: "project", label: "Projekt" },
               ].map(({ key, label }) => {
                 const item = formData.prices[key];
@@ -482,21 +373,13 @@ function Profile() {
                 return (
                   <div
                     key={key}
-                    className={`p-4 rounded-xl border flex flex-col gap-3 transition ${
-                      disabled
-                        ? "bg-neutral-900 border-neutral-800 opacity-50"
-                        : "bg-neutral-900 border-neutral-700"
-                    }`}
+                    className={`p-4 rounded-xl border flex flex-col gap-3 transition ${disabled ? "bg-neutral-900 border-neutral-800 opacity-50" : "bg-neutral-900 border-neutral-700"}`}
                   >
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
                         onClick={() => togglePrice(key)}
-                        className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                          item.enabled
-                            ? "bg-yellow-400 border-yellow-400"
-                            : "border-neutral-500"
-                        }`}
+                        className={`w-5 h-5 rounded-full border flex items-center justify-center ${item.enabled ? "bg-yellow-400 border-yellow-400" : "border-neutral-500"}`}
                       >
                         {item.enabled && (
                           <div className="w-2 h-2 bg-black rounded-full" />
@@ -514,7 +397,7 @@ function Profile() {
                           type="range"
                           min={limits.min}
                           max={limits.max}
-                          value={item.min}
+                          value={item.value.min}
                           disabled={!item.enabled}
                           onChange={(e) =>
                             updatePrice(key, "min", e.target.value)
@@ -525,8 +408,8 @@ function Profile() {
                         <input
                           type="number"
                           min={limits.min}
-                          max={item.max}
-                          value={item.min}
+                          max={limits.max}
+                          value={item.value.min}
                           disabled={disabled}
                           onChange={(e) =>
                             updatePrice(key, "min", e.target.value)
@@ -542,7 +425,7 @@ function Profile() {
                           type="range"
                           min={limits.min}
                           max={limits.max}
-                          value={item.max}
+                          value={item.value.max}
                           disabled={!item.enabled}
                           onChange={(e) =>
                             updatePrice(key, "max", e.target.value)
@@ -552,9 +435,9 @@ function Profile() {
 
                         <input
                           type="number"
-                          min={item.min}
+                          min={limits.min}
                           max={limits.max}
-                          value={item.max}
+                          value={item.value.max}
                           disabled={disabled}
                           onChange={(e) =>
                             updatePrice(key, "max", e.target.value)
@@ -613,60 +496,50 @@ function Profile() {
               </div>
             </div>
 
-            <div className="grid grid-cols-[minmax(120px,1fr)_2fr] items-center gap-4">
-              <label className="text-gray-600">
-                <span>Godziny dostępności</span>
-              </label>
+            <div className="flex flex-col gap-2">
+              <p className="text-gray-600">Dostępność</p>
 
-              <div className="flex gap-3 w-full">
-                <Input
-                  type="time"
-                  className="w-full"
-                  value={formData.hourStart}
-                  onChange={(e) =>
-                    setFormData({ ...formData, hourStart: e.target.value })
-                  }
-                />
+              {DAYS.map((day) => {
+                const active = formData.availability.some(
+                  (item) => item.day === day,
+                );
 
-                <div className="flex items-center justify-center">-</div>
-
-                <Input
-                  type="time"
-                  className="w-full"
-                  value={formData.hourEnd}
-                  onChange={(e) =>
-                    setFormData({ ...formData, hourEnd: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-[minmax(120px,1fr)_2fr] items-start gap-4">
-              <label className="text-gray-600 pt-2">
-                <span>Dni dostępności</span>
-              </label>
-
-              <div className="flex flex-wrap gap-2 w-full">
-                {DAYS.map((day) => {
-                  const active = formData.days.includes(day);
-
-                  return (
+                return (
+                  <div className="flex gap-10 w-1/2" key={day}>
                     <button
                       key={day}
                       type="button"
                       onClick={() => toggleDay(day)}
                       className={`
-                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm ${
-                          active
-                            ? "bg-brand text-neutral-100 border-brand"
-                            : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"
-                        }`}
+                        flex-1 px-4 py-2 rounded-xl border transition-all text-sm min-w-15 max-w-15 ${active ? "bg-brand text-neutral-100 border-brand" : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-neutral-500"}`}
                     >
                       {day}
                     </button>
-                  );
-                })}
-              </div>
+
+                    <div className="flex gap-3">
+                      <Input
+                        type="time"
+                        className="w-full"
+                        disabled={!active}
+                        onChange={(e) =>
+                          updateHour(day, e.target.value, "startTime")
+                        }
+                      />
+
+                      <div className="flex items-center justify-center">-</div>
+
+                      <Input
+                        type="time"
+                        className="w-full"
+                        disabled={!active}
+                        onChange={(e) =>
+                          updateHour(day, e.target.value, "endTime")
+                        }
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="flex gap-6 pt-5">
@@ -692,6 +565,12 @@ function Profile() {
               {errorMessage}
             </p>
           )}
+
+          {profileCreatedMessage && (
+            <p className="flex justify-center text-green-600 border-green-300 border-2 rounded-3xl p-2 bg-green-100">
+              {profileCreatedMessage}
+            </p>
+          )}
         </div>
       )}
 
@@ -715,10 +594,12 @@ function Profile() {
               </button>
             </div>
 
-            <ProfileCard data={{
-              profile: formData,
-              user: userData
-            }} />
+            <ProfileCard
+              data={{
+                profile: formData,
+                user: userData,
+              }}
+            />
           </div>
         </div>
       )}

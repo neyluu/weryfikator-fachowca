@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +21,10 @@ public class Profile {
     private Long id;
 
     private String specialization;
+
+    @Lob
     private String description;
+
     private String experience;
     private String localization;
     private String phoneNumber;
@@ -55,11 +57,12 @@ public class Profile {
     @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProfileImage> images = new ArrayList<>();
 
-    private LocalTime hourStart;
-    private LocalTime hourEnd;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "profile_picture_id")
+    private ProfileImage profilePicture;
 
     @ElementCollection
-    private List<String> days = new ArrayList<>();
+    private List<AvailabilityDay> availability = new ArrayList<>();
 
     @ElementCollection
     private List<String> categories = new ArrayList<>();

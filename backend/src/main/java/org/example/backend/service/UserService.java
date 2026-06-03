@@ -1,6 +1,6 @@
 package org.example.backend.service;
 
-import org.example.backend.dto.request.UpdateProfileRequest;
+import org.example.backend.dto.request.UpdateAccountRequest;
 import org.example.backend.dto.response.AuthResponse;
 import org.example.backend.entity.Role;
 import org.example.backend.entity.User;
@@ -54,7 +54,7 @@ public class UserService {
         );
     }
 
-    public AuthResponse update(String currentEmail, UpdateProfileRequest dto) {
+    public AuthResponse update(String currentEmail, UpdateAccountRequest dto) {
         User user = getByEmail(currentEmail);
         if (dto.fullName() != null) {
             user.setFullName(dto.fullName());
