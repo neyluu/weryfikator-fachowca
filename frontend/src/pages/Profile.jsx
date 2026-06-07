@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button.jsx";
 import Input from "../components/ui/Input.jsx";
+import LocationInput from "../components/ui/LocationInput";
 import TextArea from "../components/ui/TextArea.jsx";
 import ProfileCard from "../components/ui/ProfileCard.jsx";
 import { useProfileForm } from "../features/profileCreator/Handlers.jsx";
@@ -328,12 +329,10 @@ function Profile() {
               }
             />
 
-            <Input
-              type="text"
-              placeholder="Lokalizacja"
+            <LocationInput
               value={formData.localization}
-              onChange={(e) =>
-                setFormData({ ...formData, localization: e.target.value })
+              onChange={(city) =>
+                setFormData({ ...formData, localization: city })
               }
             />
 
