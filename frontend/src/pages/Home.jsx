@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
+import LocationInput from "../components/ui/LocationInput";
 import Select from "../components/ui/Select";
 import usePageTitle from "../util/pageTitle";
 import Card from "../components/ui/Card";
@@ -8,19 +9,6 @@ import Section from "../components/ui/Section";
 import Avatar from "../components/ui/Avatar";
 import Stars from "../components/ui/Stars";
 import { Search, CalendarCheck, FileText } from "lucide-react";
-
-export const CITIES = [
-  { value: "warszawa", label: "Warszawa" },
-  { value: "lodz", label: "Łódź" },
-  { value: "krakow", label: "Kraków" },
-  { value: "wroclaw", label: "Wrocław" },
-  { value: "poznan", label: "Poznań" },
-  { value: "gdansk", label: "Gdańsk" },
-  { value: "szczecin", label: "Szczecin" },
-  { value: "bydgoszcz", label: "Bydgoszcz" },
-  { value: "lublin", label: "Lublin" },
-  { value: "katowice", label: "Katowice" },
-];
 
 const POPULAR_SERVICES = [
   { label: "Remont mieszkania", link: "/search?service=remont-mieszkan" },
@@ -44,17 +32,25 @@ const POPULAR_SERVICES = [
 ];
 
 function sanitize(value) {
-  return encodeURIComponent(value.trim().replace(/[<>"'`]/g, ""));
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/ł/g, "l")
+    .replace(/Ł/g, "l")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[<>"'`]/g, "")
+    .replace(/\s+/g, "-");
 }
 
 export default function Home() {
   usePageTitle("Weryfikator Fachowca");
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState(null);
   const [service, setService] = useState("");
 
   const searchHref =
     city || service
-      ? `/search?city=${sanitize(city)}&service=${sanitize(service)}`
+      ? `/search?city=${sanitize(city?.n ?? "")}&service=${sanitize(service)}`
       : "/search";
 
   return (
@@ -73,13 +69,7 @@ export default function Home() {
               value={service}
               onChange={(e) => setService(e.target.value)}
             />
-            <Select
-              name="city"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="Miasto"
-              options={CITIES}
-            />
+            <LocationInput value={city} onChange={setCity} />
           </div>
           <Button href={searchHref}>Szukaj</Button>
         </div>

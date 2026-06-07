@@ -55,7 +55,14 @@ function ProfileCard({ data }) {
 
             <div className="flex gap-2">
               <span className="text-neutral-400">Lokalizacja:</span>
-              <p>{profile.localization || "Nie podano"}</p>
+              <p>
+                {profile.localization?.n ?? "Nie podano"}{" "}
+                <span className="text-neutral-500">
+                  {profile.localization?.p
+                    ? `(${profile.localization?.p})`
+                    : ""}
+                </span>
+              </p>
             </div>
           </div>
         </div>

@@ -7,7 +7,7 @@ export function useProfileForm() {
     specialization: "",
     description: "",
     experience: "",
-    localization: "",
+    localization: null,
     phoneNumber: "",
     email: "",
     profilePicture: "",
@@ -203,6 +203,6 @@ export function useProfileForm() {
     handleAddProfilePicture,
     removePhoto,
     removeProfilePicture,
-    updatePrice
+    updatePrice,
   };
 }
