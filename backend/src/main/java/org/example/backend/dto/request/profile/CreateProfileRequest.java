@@ -10,7 +10,7 @@ public record CreateProfileRequest(
         @NotBlank String specialization,
         @NotBlank String description,
         @NotBlank String experience,
-        @NotBlank String localization,
+        @NotBlank LocalizationDto localization,
         @NotBlank String phoneNumber,
         @NotBlank String email,
         @Valid PricesDto prices,

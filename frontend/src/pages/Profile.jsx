@@ -51,6 +51,9 @@ function Profile() {
   const handleSubmit = async (e, mode = "create") => {
     e.preventDefault();
 
+
+    console.log(formData)
+
     setErrorMessage("");
     // setProfileCreatedMessage("");
 

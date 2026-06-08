@@ -3,10 +3,8 @@ package org.example.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.request.profile.CreateProfileRequest;
 import org.example.backend.dto.request.profile.ImageDto;
-import org.example.backend.entity.AvailabilityDay;
-import org.example.backend.entity.PriceRange;
-import org.example.backend.entity.Profile;
-import org.example.backend.entity.ProfileImage;
+import org.example.backend.dto.request.profile.PriceDto;
+import org.example.backend.entity.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,19 +19,22 @@ public class ProfileService {
         profile.setSpecialization(dto.specialization());
         profile.setDescription(dto.description());
         profile.setExperience(dto.experience());
-        profile.setLocalization(dto.localization());
+        profile.setLocalization(new Localization(
+                dto.localization().city(),
+                dto.localization().voivodeship()
+        ));
         profile.setPhoneNumber(dto.phoneNumber());
         profile.setEmail(dto.email());
 
-        var c = dto.prices().consultation();
+        PriceDto c = dto.prices().consultation();
         profile.setConsultationEnabled(c.enabled());
         profile.setConsultationPrice(new PriceRange(c.value().min(), c.value().max()));
 
-        var h = dto.prices().hourly();
+        PriceDto h = dto.prices().hourly();
         profile.setHourlyEnabled(h.enabled());
         profile.setHourlyPrice(new PriceRange(h.value().min(), h.value().max()));
 
-        var p = dto.prices().project();
+        PriceDto p = dto.prices().project();
         profile.setProjectEnabled(p.enabled());
         profile.setProjectPrice(new PriceRange(p.value().min(), p.value().max()));
 
@@ -74,7 +75,7 @@ public class ProfileService {
     private List<ProfileImage> processImages(List<ImageDto> images, Profile profile) {
         List<ProfileImage> profileImages = new ArrayList<>();
 
-        for (var imgDto : images) {
+        for (ImageDto imgDto : images) {
             String base64Data = imgDto.url();
 
             if (base64Data != null && base64Data.contains(",")) {

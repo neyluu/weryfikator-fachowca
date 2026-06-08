@@ -20,7 +20,7 @@ export function validateForm(formData) {
     };
   }
 
-  if (!formData.localization.trim()) {
+  if (!formData.localization) {
     return {
       success: false,
       message: "Lokalizacja jest wymagana.",

@@ -9,7 +9,7 @@ public record ProfileDto(
         String specialization,
         String description,
         String experience,
-        String localization,
+        LocalizationDto localization,
         String phoneNumber,
         String email,
         PricesDto prices,
@@ -24,7 +24,10 @@ public record ProfileDto(
                 profile.getSpecialization(),
                 profile.getDescription(),
                 profile.getExperience(),
-                profile.getLocalization(),
+                new LocalizationDto(
+                        profile.getLocalization().getCity(),
+                        profile.getLocalization().getVoivodeship()
+                ),
                 profile.getPhoneNumber(),
                 profile.getEmail(),
 
