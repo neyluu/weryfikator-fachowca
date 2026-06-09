@@ -520,6 +520,11 @@ function Profile() {
                         type="time"
                         className="w-full"
                         disabled={!active}
+                        defaultValue={
+                          formData.availability
+                            .find((d) => d.day === day)
+                            ?.startTime?.slice(0, 5) ?? "00:00"
+                        }
                         onChange={(e) =>
                           updateHour(day, e.target.value, "startTime")
                         }
@@ -531,6 +536,11 @@ function Profile() {
                         type="time"
                         className="w-full"
                         disabled={!active}
+                        defaultValue={
+                          formData.availability
+                            .find((d) => d.day === day)
+                            ?.endTime?.slice(0, 5) ?? "23:59"
+                        }
                         onChange={(e) =>
                           updateHour(day, e.target.value, "endTime")
                         }

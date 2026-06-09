@@ -25,6 +25,7 @@ export function Input({
   type = "text",
   name,
   value,
+  defaultValue,
   onChange,
   placeholder,
   disabled = false,
@@ -49,6 +50,7 @@ export function Input({
         type={resolvedType}
         name={name}
         value={value}
+        defaultValue={defaultValue}
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}

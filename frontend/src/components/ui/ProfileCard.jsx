@@ -105,10 +105,20 @@ function ProfileCard({ data }) {
                 {item.day}
               </span>
 
-              <p className="text-neutral-300 text-lg">
-                {item.startTime.substring(0, item.startTime.length - 3)} -{" "}
-                {item.endTime.substring(0, item.endTime.length - 3)}
-              </p>
+              {item.startTime.startsWith("00:00") &&
+              item.endTime.startsWith("23:59") ? (
+                <p className="text-neutral-300 text-lg"> Cały dzień </p>
+              ) : (
+                <p className="text-neutral-300 text-lg">
+                  {item.startTime.length === 5
+                    ? item.startTime
+                    : item.startTime.substring(0, item.startTime.length - 3)}
+                  -
+                  {item.endTime.length === 5
+                    ? item.endTime
+                    : item.endTime.substring(0, item.endTime.length - 3)}
+                </p>
+              )}
             </div>
           ))}
         </div>
