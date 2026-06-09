@@ -106,7 +106,8 @@ function ProfileCard({ data }) {
               </span>
 
               <p className="text-neutral-300 text-lg">
-                {item.start} - {item.end}
+                {item.startTime.substring(0, item.startTime.length - 3)} -{" "}
+                {item.endTime.substring(0, item.endTime.length - 3)}
               </p>
             </div>
           ))}
