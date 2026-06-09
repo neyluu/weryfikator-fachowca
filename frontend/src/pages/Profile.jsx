@@ -15,6 +15,7 @@ import {
   PRICE_LIMITS,
   CATEGORIES,
 } from "../features/profileCreator/Constants.jsx";
+import { LabeledCheckbox } from "../components/ui/LabeledCheckbox.jsx";
 
 function Profile() {
   usePageTitle("Weryfikator Fachowca - Profil fachowca");
@@ -338,7 +339,9 @@ function Profile() {
                   );
                 })}
               </div>
-              <p className="mb-3">Jeśli brakuje Ci jakiejś kategorii, skontaktuj się z nami!</p>
+              <p className="mb-3">
+                Jeśli brakuje Ci jakiejś kategorii, skontaktuj się z nami!
+              </p>
             </div>
 
             <Input
@@ -377,6 +380,30 @@ function Profile() {
 
             <div className="flex flex-col gap-3">
               <p className="text-gray-600">Przedział cenowy</p>
+
+              <LabeledCheckbox
+                id="remote-consultations"
+                label="Konsultacje zdalne"
+                checked={formData.remoteConsultations}
+                onChange={(checked) =>
+                  setFormData({
+                    ...formData,
+                    remoteConsultations: checked,
+                  })
+                }
+              />
+
+              <LabeledCheckbox
+                id="paid-travel"
+                label="Dojazd płatny dodatkowo"
+                checked={formData.paidTravel}
+                onChange={(checked) =>
+                  setFormData({
+                    ...formData,
+                    paidTravel: checked,
+                  })
+                }
+              />
 
               {[
                 { key: "consultation", label: "Konsultacja" },

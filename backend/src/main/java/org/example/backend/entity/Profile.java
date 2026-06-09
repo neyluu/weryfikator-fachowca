@@ -30,6 +30,9 @@ public class Profile {
     private String phoneNumber;
     private String email;
 
+    private Boolean paidTravel;
+    private Boolean remoteConsultations;
+
     private Boolean consultationEnabled;
     @Embedded
     @AttributeOverrides({

@@ -36,6 +36,8 @@ export function useProfileForm() {
           */
     ],
     categories: [],
+    paidTravel: false,
+    remoteConsultations: false
   });
 
   const toggleDay = (day) => {

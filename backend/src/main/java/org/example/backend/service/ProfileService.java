@@ -25,6 +25,8 @@ public class ProfileService {
         ));
         profile.setPhoneNumber(dto.phoneNumber());
         profile.setEmail(dto.email());
+        profile.setPaidTravel(dto.paidTravel());
+        profile.setRemoteConsultations(dto.remoteConsultation());
 
         PriceDto c = dto.prices().consultation();
         profile.setConsultationEnabled(c.enabled());

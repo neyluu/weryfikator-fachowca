@@ -13,6 +13,8 @@ public record CreateProfileRequest(
         @NotBlank LocalizationDto localization,
         @NotBlank String phoneNumber,
         @NotBlank String email,
+        @NotBlank Boolean paidTravel,
+        @NotBlank Boolean remoteConsultation,
         @Valid PricesDto prices,
         ImageDto profilePicture,
         @NotEmpty List<ImageDto> images,

@@ -126,6 +126,16 @@ function ProfileCard({ data }) {
 
       <div className="py-2 flex flex-col gap-2 border-t border-neutral-800">
         <h3 className="text-lg font-semibold">Cennik</h3>
+        <div className="flex gap-3">
+          {profile.paidTravel && (
+            <p className="bg-brand px-3 py-2 rounded-2xl">
+              Dojazd płatny dodatkowo
+            </p>
+          )}
+          {profile.remoteConsultations && (
+            <p className="bg-brand px-3 py-2 rounded-2xl">Konsultacje zdalne</p>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {enabledPrices.length > 0 ? (
