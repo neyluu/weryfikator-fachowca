@@ -321,7 +321,7 @@ function Profile() {
             <div className="text-gray-600 flex flex-col gap-3">
               <p>Kategorie</p>
 
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2 pb-3">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2">
                 {CATEGORIES.map((category) => {
                   const active = formData.categories.includes(category);
 
@@ -338,6 +338,7 @@ function Profile() {
                   );
                 })}
               </div>
+              <p className="mb-3">Jeśli brakuje Ci jakiejś kategorii, skontaktuj się z nami!</p>
             </div>
 
             <Input
