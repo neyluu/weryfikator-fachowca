@@ -171,11 +171,6 @@ export function useProfileForm() {
       if (field === "min") min = num;
       if (field === "max") max = num;
 
-      if (min > max) {
-        if (field === "min") max = min;
-        else min = max;
-      }
-
       return {
         ...prev,
         prices: {

@@ -61,6 +61,19 @@ export function validateForm(formData) {
     };
   }
 
+  const prices = formData.prices
+  
+  if(
+    (prices.consultation.enabled && prices.consultation.value.min > prices.consultation.value.max) ||
+    (prices.hourly.enabled && prices.hourly.value.min > prices.hourly.value.max) ||
+    (prices.project.enabled && prices.project.value.min > prices.project.value.max)
+  ) {
+    return {
+      success: false,
+      message: "Minimalna stawka nie może być większa od maksymalnej."
+    }
+  }
+
   if (formData.images.length < 1 || formData.images.length > 8) {
     return {
       success: false,

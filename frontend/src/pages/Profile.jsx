@@ -30,6 +30,11 @@ function Profile() {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [profileCreatedMessage, setProfileCreatedMessage] = useState("");
+  const [errors, setErrors] = useState({
+    consultation: "",
+    hourly: "",
+    project: "",
+  });
 
   const [isProfilePreviewModalOpen, setIsProfilePreviewModalOpen] =
     useState(false);
@@ -50,9 +55,6 @@ function Profile() {
 
   const handleSubmit = async (e, mode = "create") => {
     e.preventDefault();
-
-
-    console.log(formData)
 
     setErrorMessage("");
     // setProfileCreatedMessage("");
@@ -108,6 +110,21 @@ function Profile() {
     setProfileCreation(false);
     setProfileEditing(false);
     setProfileCreated(true);
+  };
+
+  const validatePriceRange = (key) => {
+    const { min, max } = formData.prices[key].value;
+
+    const minNum = Number(min);
+    const maxNum = Number(max);
+
+    setErrors((prev) => ({
+      ...prev,
+      [key]:
+        minNum > maxNum
+          ? "Wartość minimalna nie może być większa od maksymalnej"
+          : "",
+    }));
   };
 
   useEffect(() => {
@@ -392,60 +409,39 @@ function Profile() {
                     </div>
 
                     <div className="flex flex-col gap-3">
-                      <div className="flex gap-2 items-center justify-center">
-                        <p className="text-xs text-neutral-400">Min</p>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-3 items-center">
+                          <p className="text-xs text-neutral-400">Min</p>
 
-                        <input
-                          type="range"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.min}
-                          disabled={!item.enabled}
-                          onChange={(e) =>
-                            updatePrice(key, "min", e.target.value)
-                          }
-                          className="w-full accent-yellow-400"
-                        />
+                          <input
+                            type="number"
+                            min={limits.min}
+                            max={limits.max}
+                            value={item.value.min}
+                            disabled={disabled}
+                            onChange={(e) =>
+                              updatePrice(key, "min", e.target.value)
+                            }
+                            onBlur={() => validatePriceRange(key)}
+                            className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
+                          />
 
-                        <input
-                          type="number"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.min}
-                          disabled={disabled}
-                          onChange={(e) =>
-                            updatePrice(key, "min", e.target.value)
-                          }
-                          className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
-                        />
-                      </div>
+                          <p className="text-xs text-neutral-400">Max</p>
+                          <input
+                            type="number"
+                            min={limits.min}
+                            max={limits.max}
+                            value={item.value.max}
+                            disabled={disabled}
+                            onChange={(e) =>
+                              updatePrice(key, "max", e.target.value)
+                            }
+                            onBlur={() => validatePriceRange(key)}
+                            className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
+                          />
+                        </div>
 
-                      <div className="flex gap-2 items-center justify-center">
-                        <p className="text-xs text-neutral-400">Max</p>
-
-                        <input
-                          type="range"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.max}
-                          disabled={!item.enabled}
-                          onChange={(e) =>
-                            updatePrice(key, "max", e.target.value)
-                          }
-                          className="w-full accent-yellow-400"
-                        />
-
-                        <input
-                          type="number"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.max}
-                          disabled={disabled}
-                          onChange={(e) =>
-                            updatePrice(key, "max", e.target.value)
-                          }
-                          className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
-                        />
+                        <p className="text-red-500">{errors[key]}</p>
                       </div>
                     </div>
                   </div>
