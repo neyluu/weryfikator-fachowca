@@ -14,6 +14,7 @@ import {
   DAYS,
   PRICE_LIMITS,
   CATEGORIES,
+  LIMITS,
 } from "../features/profileCreator/Constants.jsx";
 import { LabeledCheckbox } from "../components/ui/LabeledCheckbox.jsx";
 
@@ -250,17 +251,43 @@ function Profile() {
               handleSubmit(e, profileEditing ? "edit" : "create")
             }
           >
+            <div className="flex gap-3 text-gray-600">
+              <p>Specjalizacja</p>
+              <p
+                className={`${
+                  formData.specialization.length < LIMITS.specialization.min ||
+                  formData.specialization.length > LIMITS.specialization.max
+                    ? "text-red-500"
+                    : ""
+                }`}
+              >
+                ({formData.specialization.length}/{LIMITS.specialization.max})
+              </p>
+            </div>
             <Input
               type="text"
-              placeholder="Specjalizacja"
+              placeholder=""
               value={formData.specialization}
               onChange={(e) =>
                 setFormData({ ...formData, specialization: e.target.value })
               }
             />
 
+            <div className="flex gap-3 text-gray-600">
+              <p>Opis działalności</p>
+              <p
+                className={`${
+                  formData.description.length < LIMITS.description.min ||
+                  formData.description.length > LIMITS.description.max
+                    ? "text-red-500"
+                    : ""
+                }`}
+              >
+                ({formData.description.length}/{LIMITS.description.max})
+              </p>
+            </div>
             <TextArea
-              placeholder="Opis działalności"
+              placeholder=""
               className="p-3 rounded-xl bg-neutral-900 border border-neutral-700"
               value={formData.description}
               onChange={(e) =>
@@ -344,15 +371,29 @@ function Profile() {
               </p>
             </div>
 
+            <div className="flex gap-3 text-gray-600">
+              <p>Doświadczenie</p>
+              <p
+                className={`${
+                  formData.experience.length < LIMITS.experience.min ||
+                  formData.experience.length > LIMITS.experience.max
+                    ? "text-red-500"
+                    : ""
+                }`}
+              >
+                ({formData.experience.length}/{LIMITS.experience.max})
+              </p>
+            </div>
             <Input
               type="text"
-              placeholder="Doświadczenie"
+              placeholder=""
               value={formData.experience}
               onChange={(e) =>
                 setFormData({ ...formData, experience: e.target.value })
               }
             />
 
+            <p className="text-gray-600">Lokalizacja</p>
             <LocationInput
               value={formData.localization}
               onChange={(city) =>
@@ -360,18 +401,20 @@ function Profile() {
               }
             />
 
+            <p className="text-gray-600">Numer telefonu</p>
             <Input
               type="number"
-              placeholder="Numer telefonu"
+              placeholder=""
               value={formData.phoneNumber}
               onChange={(e) =>
                 setFormData({ ...formData, phoneNumber: e.target.value })
               }
             />
 
+            <p className="text-gray-600">Email</p>
             <Input
               type="email"
-              placeholder="Email"
+              placeholder=""
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
