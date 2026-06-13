@@ -36,6 +36,8 @@ export function useProfileForm() {
           */
     ],
     categories: [],
+    paidTravel: false,
+    remoteConsultations: false
   });
 
   const toggleDay = (day) => {
@@ -170,11 +172,6 @@ export function useProfileForm() {
 
       if (field === "min") min = num;
       if (field === "max") max = num;
-
-      if (min > max) {
-        if (field === "min") max = min;
-        else min = max;
-      }
 
       return {
         ...prev,

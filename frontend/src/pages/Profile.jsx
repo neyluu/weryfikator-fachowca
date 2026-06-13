@@ -14,7 +14,9 @@ import {
   DAYS,
   PRICE_LIMITS,
   CATEGORIES,
+  LIMITS,
 } from "../features/profileCreator/Constants.jsx";
+import { LabeledCheckbox } from "../components/ui/LabeledCheckbox.jsx";
 
 function Profile() {
   usePageTitle("Weryfikator Fachowca - Profil fachowca");
@@ -30,6 +32,11 @@ function Profile() {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [profileCreatedMessage, setProfileCreatedMessage] = useState("");
+  const [errors, setErrors] = useState({
+    consultation: "",
+    hourly: "",
+    project: "",
+  });
 
   const [isProfilePreviewModalOpen, setIsProfilePreviewModalOpen] =
     useState(false);
@@ -105,6 +112,21 @@ function Profile() {
     setProfileCreation(false);
     setProfileEditing(false);
     setProfileCreated(true);
+  };
+
+  const validatePriceRange = (key) => {
+    const { min, max } = formData.prices[key].value;
+
+    const minNum = Number(min);
+    const maxNum = Number(max);
+
+    setErrors((prev) => ({
+      ...prev,
+      [key]:
+        minNum > maxNum
+          ? "Wartość minimalna nie może być większa od maksymalnej"
+          : "",
+    }));
   };
 
   useEffect(() => {
@@ -229,17 +251,43 @@ function Profile() {
               handleSubmit(e, profileEditing ? "edit" : "create")
             }
           >
+            <div className="flex gap-3 text-gray-600">
+              <p>Specjalizacja</p>
+              <p
+                className={`${
+                  formData.specialization.length < LIMITS.specialization.min ||
+                  formData.specialization.length > LIMITS.specialization.max
+                    ? "text-red-500"
+                    : ""
+                }`}
+              >
+                ({formData.specialization.length}/{LIMITS.specialization.max})
+              </p>
+            </div>
             <Input
               type="text"
-              placeholder="Specjalizacja"
+              placeholder=""
               value={formData.specialization}
               onChange={(e) =>
                 setFormData({ ...formData, specialization: e.target.value })
               }
             />
 
+            <div className="flex gap-3 text-gray-600">
+              <p>Opis działalności</p>
+              <p
+                className={`${
+                  formData.description.length < LIMITS.description.min ||
+                  formData.description.length > LIMITS.description.max
+                    ? "text-red-500"
+                    : ""
+                }`}
+              >
+                ({formData.description.length}/{LIMITS.description.max})
+              </p>
+            </div>
             <TextArea
-              placeholder="Opis działalności"
+              placeholder=""
               className="p-3 rounded-xl bg-neutral-900 border border-neutral-700"
               value={formData.description}
               onChange={(e) =>
@@ -301,7 +349,7 @@ function Profile() {
             <div className="text-gray-600 flex flex-col gap-3">
               <p>Kategorie</p>
 
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2 pb-3">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2">
                 {CATEGORIES.map((category) => {
                   const active = formData.categories.includes(category);
 
@@ -318,17 +366,34 @@ function Profile() {
                   );
                 })}
               </div>
+              <p className="mb-3">
+                Jeśli brakuje Ci jakiejś kategorii, skontaktuj się z nami!
+              </p>
             </div>
 
+            <div className="flex gap-3 text-gray-600">
+              <p>Doświadczenie</p>
+              <p
+                className={`${
+                  formData.experience.length < LIMITS.experience.min ||
+                  formData.experience.length > LIMITS.experience.max
+                    ? "text-red-500"
+                    : ""
+                }`}
+              >
+                ({formData.experience.length}/{LIMITS.experience.max})
+              </p>
+            </div>
             <Input
               type="text"
-              placeholder="Doświadczenie"
+              placeholder=""
               value={formData.experience}
               onChange={(e) =>
                 setFormData({ ...formData, experience: e.target.value })
               }
             />
 
+            <p className="text-gray-600">Lokalizacja</p>
             <LocationInput
               value={formData.localization}
               onChange={(city) =>
@@ -336,18 +401,20 @@ function Profile() {
               }
             />
 
+            <p className="text-gray-600">Numer telefonu</p>
             <Input
               type="number"
-              placeholder="Numer telefonu"
+              placeholder=""
               value={formData.phoneNumber}
               onChange={(e) =>
                 setFormData({ ...formData, phoneNumber: e.target.value })
               }
             />
 
+            <p className="text-gray-600">Email</p>
             <Input
               type="email"
-              placeholder="Email"
+              placeholder=""
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
@@ -356,6 +423,30 @@ function Profile() {
 
             <div className="flex flex-col gap-3">
               <p className="text-gray-600">Przedział cenowy</p>
+
+              <LabeledCheckbox
+                id="remote-consultations"
+                label="Konsultacje zdalne"
+                checked={formData.remoteConsultations}
+                onChange={(checked) =>
+                  setFormData({
+                    ...formData,
+                    remoteConsultations: checked,
+                  })
+                }
+              />
+
+              <LabeledCheckbox
+                id="paid-travel"
+                label="Dojazd płatny dodatkowo"
+                checked={formData.paidTravel}
+                onChange={(checked) =>
+                  setFormData({
+                    ...formData,
+                    paidTravel: checked,
+                  })
+                }
+              />
 
               {[
                 { key: "consultation", label: "Konsultacja" },
@@ -389,60 +480,39 @@ function Profile() {
                     </div>
 
                     <div className="flex flex-col gap-3">
-                      <div className="flex gap-2 items-center justify-center">
-                        <p className="text-xs text-neutral-400">Min</p>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-3 items-center">
+                          <p className="text-xs text-neutral-400">Min</p>
 
-                        <input
-                          type="range"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.min}
-                          disabled={!item.enabled}
-                          onChange={(e) =>
-                            updatePrice(key, "min", e.target.value)
-                          }
-                          className="w-full accent-yellow-400"
-                        />
+                          <input
+                            type="number"
+                            min={limits.min}
+                            max={limits.max}
+                            value={item.value.min}
+                            disabled={disabled}
+                            onChange={(e) =>
+                              updatePrice(key, "min", e.target.value)
+                            }
+                            onBlur={() => validatePriceRange(key)}
+                            className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
+                          />
 
-                        <input
-                          type="number"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.min}
-                          disabled={disabled}
-                          onChange={(e) =>
-                            updatePrice(key, "min", e.target.value)
-                          }
-                          className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
-                        />
-                      </div>
+                          <p className="text-xs text-neutral-400">Max</p>
+                          <input
+                            type="number"
+                            min={limits.min}
+                            max={limits.max}
+                            value={item.value.max}
+                            disabled={disabled}
+                            onChange={(e) =>
+                              updatePrice(key, "max", e.target.value)
+                            }
+                            onBlur={() => validatePriceRange(key)}
+                            className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
+                          />
+                        </div>
 
-                      <div className="flex gap-2 items-center justify-center">
-                        <p className="text-xs text-neutral-400">Max</p>
-
-                        <input
-                          type="range"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.max}
-                          disabled={!item.enabled}
-                          onChange={(e) =>
-                            updatePrice(key, "max", e.target.value)
-                          }
-                          className="w-full accent-yellow-400"
-                        />
-
-                        <input
-                          type="number"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.max}
-                          disabled={disabled}
-                          onChange={(e) =>
-                            updatePrice(key, "max", e.target.value)
-                          }
-                          className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
-                        />
+                        <p className="text-red-500">{errors[key]}</p>
                       </div>
                     </div>
                   </div>
@@ -520,6 +590,11 @@ function Profile() {
                         type="time"
                         className="w-full"
                         disabled={!active}
+                        defaultValue={
+                          formData.availability
+                            .find((d) => d.day === day)
+                            ?.startTime?.slice(0, 5) ?? "00:00"
+                        }
                         onChange={(e) =>
                           updateHour(day, e.target.value, "startTime")
                         }
@@ -531,6 +606,11 @@ function Profile() {
                         type="time"
                         className="w-full"
                         disabled={!active}
+                        defaultValue={
+                          formData.availability
+                            .find((d) => d.day === day)
+                            ?.endTime?.slice(0, 5) ?? "23:59"
+                        }
                         onChange={(e) =>
                           updateHour(day, e.target.value, "endTime")
                         }

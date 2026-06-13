@@ -105,9 +105,20 @@ function ProfileCard({ data }) {
                 {item.day}
               </span>
 
-              <p className="text-neutral-300 text-lg">
-                {item.start} - {item.end}
-              </p>
+              {item.startTime.startsWith("00:00") &&
+              item.endTime.startsWith("23:59") ? (
+                <p className="text-neutral-300 text-lg"> Cały dzień </p>
+              ) : (
+                <p className="text-neutral-300 text-lg">
+                  {item.startTime.length === 5
+                    ? item.startTime
+                    : item.startTime.substring(0, item.startTime.length - 3)}
+                  -
+                  {item.endTime.length === 5
+                    ? item.endTime
+                    : item.endTime.substring(0, item.endTime.length - 3)}
+                </p>
+              )}
             </div>
           ))}
         </div>
@@ -115,6 +126,16 @@ function ProfileCard({ data }) {
 
       <div className="py-2 flex flex-col gap-2 border-t border-neutral-800">
         <h3 className="text-lg font-semibold">Cennik</h3>
+        <div className="flex gap-3">
+          {profile.paidTravel && (
+            <p className="bg-brand px-3 py-2 rounded-2xl">
+              Dojazd płatny dodatkowo
+            </p>
+          )}
+          {profile.remoteConsultations && (
+            <p className="bg-brand px-3 py-2 rounded-2xl">Konsultacje zdalne</p>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {enabledPrices.length > 0 ? (

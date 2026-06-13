@@ -1,26 +1,74 @@
+import { LIMITS } from "./Constants.jsx";
+
 export function validateForm(formData) {
-  if (!formData.specialization.trim()) {
+  let specialization = formData.specialization.trim();
+  if (!specialization) {
     return {
       success: false,
       message: "Specjalizacja jest wymagana.",
     };
   }
+  if (
+    specialization.length < LIMITS.specialization.min ||
+    specialization.length > LIMITS.specialization.max
+  ) {
+    return {
+      success: false,
+      message:
+        "Specjalizacja musi zmieścić się w limicie znaków (" +
+        LIMITS.specialization.min +
+        "/" +
+        LIMITS.specialization.max +
+        ")",
+    };
+  }
 
-  if (!formData.description.trim()) {
+  let description = formData.description.trim();
+  if (!description) {
     return {
       success: false,
       message: "Opis jest wymagany.",
     };
   }
+  if (
+    description.length < LIMITS.description.min ||
+    description.length > LIMITS.description.max
+  ) {
+    return {
+      success: false,
+      message:
+        "Opis musi zmieścić się w limicie znaków (" +
+        LIMITS.description.min +
+        "/" +
+        LIMITS.description.max +
+        ")",
+    };
+  }
 
-  if (!formData.experience.trim()) {
+  let experience = formData.experience.trim();
+  if (!experience) {
     return {
       success: false,
       message: "Doświadczenie jest wymagane.",
     };
   }
 
-  if (!formData.localization.trim()) {
+  if (
+    experience.length < LIMITS.experience.min ||
+    experience.length > LIMITS.experience.max
+  ) {
+    return {
+      success: false,
+      message:
+        "Doświadczenie musi zmieścić się w limicie znaków (" +
+        LIMITS.experience.min +
+        "/" +
+        LIMITS.experience.max +
+        ")",
+    };
+  }
+
+  if (!formData.localization) {
     return {
       success: false,
       message: "Lokalizacja jest wymagana.",
@@ -58,6 +106,22 @@ export function validateForm(formData) {
     return {
       success: false,
       message: "Musisz wybrać przynajmniej jeden rodzaj wyceny.",
+    };
+  }
+
+  const prices = formData.prices;
+
+  if (
+    (prices.consultation.enabled &&
+      prices.consultation.value.min > prices.consultation.value.max) ||
+    (prices.hourly.enabled &&
+      prices.hourly.value.min > prices.hourly.value.max) ||
+    (prices.project.enabled &&
+      prices.project.value.min > prices.project.value.max)
+  ) {
+    return {
+      success: false,
+      message: "Minimalna stawka nie może być większa od maksymalnej.",
     };
   }
 

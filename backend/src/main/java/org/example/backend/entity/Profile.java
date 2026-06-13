@@ -26,9 +26,12 @@ public class Profile {
     private String description;
 
     private String experience;
-    private String localization;
+    private Localization localization;
     private String phoneNumber;
     private String email;
+
+    private Boolean paidTravel;
+    private Boolean remoteConsultations;
 
     private Boolean consultationEnabled;
     @Embedded

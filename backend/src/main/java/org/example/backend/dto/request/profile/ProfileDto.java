@@ -1,5 +1,6 @@
 package org.example.backend.dto.request.profile;
 
+import jakarta.validation.constraints.NotBlank;
 import org.example.backend.entity.Profile;
 import org.example.backend.entity.ProfileImage;
 
@@ -9,9 +10,11 @@ public record ProfileDto(
         String specialization,
         String description,
         String experience,
-        String localization,
+        LocalizationDto localization,
         String phoneNumber,
         String email,
+        Boolean paidTravel,
+        Boolean remoteConsultation,
         PricesDto prices,
         ImageDto profilePicture,
         List<ImageDto> images,
@@ -24,9 +27,14 @@ public record ProfileDto(
                 profile.getSpecialization(),
                 profile.getDescription(),
                 profile.getExperience(),
-                profile.getLocalization(),
+                new LocalizationDto(
+                        profile.getLocalization().getCity(),
+                        profile.getLocalization().getVoivodeship()
+                ),
                 profile.getPhoneNumber(),
                 profile.getEmail(),
+                profile.getPaidTravel(),
+                profile.getRemoteConsultations(),
 
                 new PricesDto(
                         new PriceDto(
