@@ -118,7 +118,7 @@ function ProfileCard({ data }) {
       <div className="py-2 flex flex-col gap-2 border-t border-neutral-800">
         <h3 className="text-lg font-semibold">Opis</h3>
 
-        <p className="text-neutral-300 leading-relaxed">
+        <p className="text-neutral-300 leading-relaxed wrap-break-word">
           {profile.description || "Brak opisu"}
         </p>
       </div>
