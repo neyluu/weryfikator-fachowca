@@ -1,7 +1,7 @@
 import { LIMITS } from "./Constants.jsx";
 
 export function validateForm(formData) {
-  let specialization = formData.specialization.trim();
+  const specialization = formData.specialization.trim();
   if (!specialization) {
     return {
       success: false,
@@ -23,7 +23,7 @@ export function validateForm(formData) {
     };
   }
 
-  let description = formData.description.trim();
+  const description = formData.description.trim();
   if (!description) {
     return {
       success: false,
@@ -41,29 +41,6 @@ export function validateForm(formData) {
         LIMITS.description.min +
         "/" +
         LIMITS.description.max +
-        ")",
-    };
-  }
-
-  let experience = formData.experience.trim();
-  if (!experience) {
-    return {
-      success: false,
-      message: "Doświadczenie jest wymagane.",
-    };
-  }
-
-  if (
-    experience.length < LIMITS.experience.min ||
-    experience.length > LIMITS.experience.max
-  ) {
-    return {
-      success: false,
-      message:
-        "Doświadczenie musi zmieścić się w limicie znaków (" +
-        LIMITS.experience.min +
-        "/" +
-        LIMITS.experience.max +
         ")",
     };
   }
@@ -90,7 +67,6 @@ export function validateForm(formData) {
   }
 
   const phoneRegex = /^(\+48)?[\s-]?(\d{3}[\s-]?\d{3}[\s-]?\d{3})$/;
-
   if (!phoneRegex.test(formData.phoneNumber)) {
     return {
       success: false,
@@ -101,7 +77,6 @@ export function validateForm(formData) {
   const hasEnabledPrice = Object.values(formData.prices).some(
     (price) => price.enabled,
   );
-
   if (!hasEnabledPrice) {
     return {
       success: false,
@@ -110,7 +85,6 @@ export function validateForm(formData) {
   }
 
   const prices = formData.prices;
-
   if (
     (prices.consultation.enabled &&
       prices.consultation.value.min > prices.consultation.value.max) ||
