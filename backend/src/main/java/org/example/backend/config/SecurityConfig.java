@@ -29,11 +29,22 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth ->
                 auth
+                    .requestMatchers(
+                        "/swagger",
+                        "/swagger/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**"
+                    )
+                    .permitAll()
                     .requestMatchers("/auth/**")
                     .permitAll()
-                    .requestMatchers("/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/specialist/**").hasAnyRole("ADMIN", "SPECIALIST")
-                    .requestMatchers("/profile/**").authenticated()
+                    .requestMatchers("/admin/**")
+                    .hasRole("ADMIN")
+                    .requestMatchers("/specialist/**")
+                    .hasAnyRole("ADMIN", "SPECIALIST")
+                    .requestMatchers("/profile/**")
+                    .authenticated()
                     .anyRequest()
                     .authenticated()
             )
