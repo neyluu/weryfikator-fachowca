@@ -25,6 +25,11 @@ const MONTHS = [
 const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: 40 }, (_, index) => currentYear - index);
 
+function toComparableDate(year, month) {
+  if (!year || !month) return null;
+  return Number(year) * 12 + Number(month);
+}
+
 const emptyEntry = {
   title: "",
   description: "",
@@ -74,18 +79,35 @@ function ExperienceForm({ entry, onChange, onSave, onCancel }) {
 
   const handleSave = () => {
     const { title, type, startMonth, startYear } = localEntry;
+
     if (!title.trim() || !type || !startMonth || !startYear) return;
+
     if (!localEntry.isCurrent && (!localEntry.endMonth || !localEntry.endYear))
       return;
+
+    if (isDateInvalid) return;
+
     onSave(localEntry);
   };
+
+  const isDateInvalid = (() => {
+    if (localEntry.isCurrent) return false;
+
+    const start = toComparableDate(localEntry.startYear, localEntry.startMonth);
+    const end = toComparableDate(localEntry.endYear, localEntry.endMonth);
+
+    if (!start || !end) return false;
+
+    return start > end;
+  })();
 
   const isFormValid =
     localEntry.title.trim() &&
     localEntry.type &&
     localEntry.startMonth &&
     localEntry.startYear &&
-    (localEntry.isCurrent || (localEntry.endMonth && localEntry.endYear));
+    (localEntry.isCurrent || (localEntry.endMonth && localEntry.endYear)) &&
+    !isDateInvalid;
 
   return (
     <div className="flex flex-col gap-4 p-5 bg-neutral-800/40 border border-neutral-700 rounded-2xl">
@@ -125,6 +147,12 @@ function ExperienceForm({ entry, onChange, onSave, onCancel }) {
           className="bg-neutral-900 border border-neutral-700 rounded-xl px-3 py-2 text-sm text-neutral-200 resize-none focus:outline-none focus:border-neutral-500 placeholder:text-neutral-600"
         />
       </div>
+
+      {isDateInvalid && (
+        <p className="text-xs text-red-400">
+          Data rozpoczęcia nie może być późniejsza niż data zakończenia.
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
