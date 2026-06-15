@@ -18,6 +18,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
+import SearchResults from "./pages/SearchResults";
 
 function App() {
   return (
@@ -57,7 +58,9 @@ function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
             </Route>
+              <Route path="/search" element={<SearchResults />} />
             <Route path="*" element={<NotFound />} />
+
           </Routes>
         </Layout>
       </AuthProvider>
