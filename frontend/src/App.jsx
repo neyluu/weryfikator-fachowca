@@ -18,6 +18,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
+import ContractTestPage from "./pages/ContractTestPage.jsx";
 
 function App() {
   return (
@@ -56,6 +57,8 @@ function App() {
               <Route path="account" element={<Account />} />
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
+
+              <Route path="contracts" element={<ContractTestPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
