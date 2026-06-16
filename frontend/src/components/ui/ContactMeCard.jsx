@@ -1,17 +1,19 @@
-import Input from "./Input.jsx";
+import { useNavigate } from "react-router-dom";
+import {useAuth} from "../../context/AuthContext.jsx";
 import Button from "./Button.jsx";
 
-export default function ContactMeCard() {
-  return (
-    <div className="border-neutral-700 border rounded-3xl p-6">
-      <p className="mb-3">Skontaktuj się ze mną!</p>
+export default function ContactMeCard({ professionalId }) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-      <form action="" className="flex gap-3">
-        <Input placeholder="Wiadomość" />
-        <Button type="submit" className="shrink-0">
-          Wyślij wiadomość
-        </Button>
-      </form>
+  const handleClick = () => {
+    navigate(`/dashboard/chat/${professionalId}`);
+  };
+
+  return (
+    <div className="border-neutral-700 border rounded-3xl p-6 flex items-center justify-between">
+      <p className="text-xl">Skontaktuj się ze mną!</p>
+      <Button onClick={handleClick}>Wyślij wiadomość</Button>
     </div>
   );
 }
