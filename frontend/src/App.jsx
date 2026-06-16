@@ -19,6 +19,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
 import ContractTestPage from "./pages/ContractTestPage.jsx";
+import ContactMeCard from "./components/ui/ContactMeCard.jsx";
 
 function App() {
   return (
@@ -59,7 +60,9 @@ function App() {
               <Route path="settings" element={<Settings />} />
 
               <Route path="contracts" element={<ContractTestPage />} />
+
             </Route>
+            <Route path="contact-me" element={<ContactMeCard/>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
