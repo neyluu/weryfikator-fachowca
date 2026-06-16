@@ -7,7 +7,7 @@ export default function ContactMeCard() {
       <p className="mb-3">Skontaktuj się ze mną!</p>
 
       <form action="" className="flex gap-3">
-        <Input className="" />
+        <Input placeholder="Wiadomość" />
         <Button type="submit" className="shrink-0">
           Wyślij wiadomość
         </Button>
