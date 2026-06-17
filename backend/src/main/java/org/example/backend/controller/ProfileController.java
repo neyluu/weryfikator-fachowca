@@ -27,18 +27,14 @@ public class ProfileController {
 
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody CreateProfileRequest dto, Authentication auth) {
-
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow();
+        Long userId = (Long) auth.getPrincipal();
+        User user = userRepository.findById(userId).orElseThrow();
 
         Profile profile = new Profile();
-
         profileService.apply(profile, dto);
         profileService.applyImages(profile, dto.images());
         profileService.applyProfilePicture(profile, dto.profilePicture());
-
         profile.setUser(user);
-
         profileRepository.save(profile);
 
         return ResponseEntity.ok(Map.of("message", "created"));
@@ -47,13 +43,10 @@ public class ProfileController {
     @PutMapping("/update")
     @Transactional
     public ResponseEntity<?> update(@RequestBody CreateProfileRequest dto, Authentication auth) {
+        Long userId = (Long) auth.getPrincipal();
+        User user = userRepository.findById(userId).orElseThrow();
 
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow();
-
-        Profile profile = profileRepository.findByUser(user)
-                .orElseThrow();
-
+        Profile profile = profileRepository.findByUser(user).orElseThrow();
         profileService.apply(profile, dto);
         profileService.applyImages(profile, dto.images());
         profileService.applyProfilePicture(profile, dto.profilePicture());
@@ -63,21 +56,13 @@ public class ProfileController {
 
     @Transactional(readOnly = true)
     @GetMapping("/me")
-    public ProfileDto get(Authentication authentication) {
-        System.out.println(authentication);
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "User with email " + email + " was not found"
-                ));
+    public ProfileDto get(Authentication auth) {
+        Long userId = (Long) auth.getPrincipal();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         Profile profile = profileRepository.findByUser(user)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Profile not found"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
 
         return ProfileDto.of(profile);
     }

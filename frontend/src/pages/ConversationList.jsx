@@ -27,6 +27,8 @@ export default function ConversationList() {
       .finally(() => setLoading(false));
   }, []);
 
+  console.log(conversations)
+
   if (loading) return <p>Ładowanie...</p>;
   if (error) return <p>{error}</p>;
 
