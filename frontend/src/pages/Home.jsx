@@ -30,17 +30,8 @@ const POPULAR_SERVICES = [
     link: "/search?service=reprezentacja-w-sadzie",
   },
 ];
-
 function sanitize(value) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/ł/g, "l")
-    .replace(/Ł/g, "l")
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/[<>"'`]/g, "")
-    .replace(/\s+/g, "-");
+  return encodeURIComponent(value.trim().replace(/[<>"'`]/g, ""));
 }
 
 export default function Home() {
