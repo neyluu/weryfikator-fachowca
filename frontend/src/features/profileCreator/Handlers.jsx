@@ -6,8 +6,7 @@ export function useProfileForm() {
   const [formData, setFormData] = useState({
     specialization: "",
     description: "",
-    experience: "",
-    localization: "",
+    localization: null,
     phoneNumber: "",
     email: "",
     profilePicture: "",
@@ -26,25 +25,20 @@ export function useProfileForm() {
       },
     },
     images: [],
-    availability: [
-      /*
-            {
-              day: "Pon",
-              startTime: "00:00",
-              endTime: "09:00"
-            },
-          */
-    ],
+    availability: [],
     categories: [],
+    paidTravel: false,
+    remoteConsultations: false,
+    experienceEntries: [],
   });
 
   const toggleDay = (day) => {
-    setFormData((prev) => {
-      const existing = prev.availability.find((item) => item.day === day);
+    setFormData((previous) => {
+      const existing = previous.availability.find((item) => item.day === day);
 
       if (existing) {
-        setSavedHours((prevHours) => ({
-          ...prevHours,
+        setSavedHours((previousHours) => ({
+          ...previousHours,
           [day]: {
             startTime: existing.startTime,
             endTime: existing.endTime,
@@ -52,15 +46,17 @@ export function useProfileForm() {
         }));
 
         return {
-          ...prev,
-          availability: prev.availability.filter((item) => item.day !== day),
+          ...previous,
+          availability: previous.availability.filter(
+            (item) => item.day !== day,
+          ),
         };
       }
 
       return {
-        ...prev,
+        ...previous,
         availability: [
-          ...prev.availability,
+          ...previous.availability,
           {
             day,
             startTime: savedHours[day]?.startTime ?? "00:00",
@@ -72,9 +68,9 @@ export function useProfileForm() {
   };
 
   const updateHour = (day, value, type) => {
-    setFormData((prev) => ({
-      ...prev,
-      availability: prev.availability.map((item) =>
+    setFormData((previous) => ({
+      ...previous,
+      availability: previous.availability.map((item) =>
         item.day === day
           ? {
               ...item,
@@ -86,31 +82,31 @@ export function useProfileForm() {
   };
 
   const toggleCategory = (category) => {
-    setFormData((prev) => {
-      return {
-        ...prev,
-        categories: prev.categories.includes(category)
-          ? prev.categories.filter((c) => c !== category)
-          : [...prev.categories, category],
-      };
-    });
+    setFormData((previous) => ({
+      ...previous,
+      categories: previous.categories.includes(category)
+        ? previous.categories.filter(
+            (existingCategory) => existingCategory !== category,
+          )
+        : [...previous.categories, category],
+    }));
   };
 
   const togglePrice = (key) => {
-    setFormData((prev) => ({
-      ...prev,
+    setFormData((previous) => ({
+      ...previous,
       prices: {
-        ...prev.prices,
+        ...previous.prices,
         [key]: {
-          ...prev.prices[key],
-          enabled: !prev.prices[key].enabled,
+          ...previous.prices[key],
+          enabled: !previous.prices[key].enabled,
         },
       },
     }));
   };
 
-  const handleAddPhotos = (e) => {
-    const chosenFiles = Array.from(e.target.files);
+  const handleAddPhotos = (event) => {
+    const chosenFiles = Array.from(event.target.files);
 
     const newPhotos = chosenFiles.map((file) => ({
       id: crypto.randomUUID(),
@@ -118,15 +114,14 @@ export function useProfileForm() {
       url: URL.createObjectURL(file),
     }));
 
-    setFormData((prev) => ({
-      ...prev,
-      images: [...prev.images, ...newPhotos],
+    setFormData((previous) => ({
+      ...previous,
+      images: [...previous.images, ...newPhotos],
     }));
   };
 
-  const handleAddProfilePicture = async (e) => {
-    const file = e.target.files[0];
-
+  const handleAddProfilePicture = async (event) => {
+    const file = event.target.files[0];
     const base64 = await convertToBase64(file);
 
     const photo = {
@@ -135,61 +130,56 @@ export function useProfileForm() {
       url: base64,
     };
 
-    setFormData((prev) => ({
-      ...prev,
+    setFormData((previous) => ({
+      ...previous,
       profilePicture: photo,
     }));
   };
 
   const removePhoto = (idToRemove) => {
-    setFormData((prev) => {
-      return {
-        ...prev,
-        images: prev.images.filter((photo) => photo.id !== idToRemove),
-      };
-    });
+    setFormData((previous) => ({
+      ...previous,
+      images: previous.images.filter((photo) => photo.id !== idToRemove),
+    }));
   };
 
   const removeProfilePicture = () => {
-    setFormData((prev) => {
-      return {
-        ...prev,
-        profilePicture: "",
-      };
-    });
+    setFormData((previous) => ({
+      ...previous,
+      profilePicture: "",
+    }));
   };
 
   const updatePrice = (key, field, value) => {
-    const num = Number(value);
+    const numericValue = Number(value);
 
-    setFormData((prev) => {
-      const current = prev.prices[key];
+    setFormData((previous) => {
+      const current = previous.prices[key];
 
       let min = current.value.min;
       let max = current.value.max;
 
-      if (field === "min") min = num;
-      if (field === "max") max = num;
-
-      if (min > max) {
-        if (field === "min") max = min;
-        else min = max;
-      }
+      if (field === "min") min = numericValue;
+      if (field === "max") max = numericValue;
 
       return {
-        ...prev,
+        ...previous,
         prices: {
-          ...prev.prices,
+          ...previous.prices,
           [key]: {
             ...current,
-            value: {
-              min,
-              max,
-            },
+            value: { min, max },
           },
         },
       };
     });
+  };
+
+  const updateExperienceEntries = (updatedEntries) => {
+    setFormData((previous) => ({
+      ...previous,
+      experienceEntries: updatedEntries,
+    }));
   };
 
   return {
@@ -203,6 +193,7 @@ export function useProfileForm() {
     handleAddProfilePicture,
     removePhoto,
     removeProfilePicture,
-    updatePrice
+    updatePrice,
+    updateExperienceEntries,
   };
 }

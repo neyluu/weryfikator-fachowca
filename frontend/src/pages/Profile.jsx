@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button.jsx";
 import Input from "../components/ui/Input.jsx";
+import LocationInput from "../components/ui/LocationInput";
 import TextArea from "../components/ui/TextArea.jsx";
 import ProfileCard from "../components/ui/ProfileCard.jsx";
 import { useProfileForm } from "../features/profileCreator/Handlers.jsx";
@@ -13,7 +14,10 @@ import {
   DAYS,
   PRICE_LIMITS,
   CATEGORIES,
+  LIMITS,
 } from "../features/profileCreator/Constants.jsx";
+import { LabeledCheckbox } from "../components/ui/LabeledCheckbox.jsx";
+import { ExperienceSection } from "../features/profileCreator/ExperienceSection.jsx";
 
 function Profile() {
   usePageTitle("Weryfikator Fachowca - Profil fachowca");
@@ -29,6 +33,11 @@ function Profile() {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [profileCreatedMessage, setProfileCreatedMessage] = useState("");
+  const [errors, setErrors] = useState({
+    consultation: "",
+    hourly: "",
+    project: "",
+  });
 
   const [isProfilePreviewModalOpen, setIsProfilePreviewModalOpen] =
     useState(false);
@@ -45,13 +54,13 @@ function Profile() {
     removePhoto,
     removeProfilePicture,
     updatePrice,
+    updateExperienceEntries,
   } = useProfileForm();
 
-  const handleSubmit = async (e, mode = "create") => {
-    e.preventDefault();
+  const handleSubmit = async (event, mode = "create") => {
+    event.preventDefault();
 
     setErrorMessage("");
-    // setProfileCreatedMessage("");
 
     const validationResult = validateForm(formData);
     if (!validationResult.success) {
@@ -95,15 +104,24 @@ function Profile() {
       return;
     }
 
-    const data = await res.json();
-
-    // setProfileCreatedMessage(
-    //   mode === "edit" ? "Edytowano profil!" : "Utworzono profil!",
-    // );
-
     setProfileCreation(false);
     setProfileEditing(false);
     setProfileCreated(true);
+  };
+
+  const validatePriceRange = (key) => {
+    const { min, max } = formData.prices[key].value;
+
+    const minNum = Number(min);
+    const maxNum = Number(max);
+
+    setErrors((previous) => ({
+      ...previous,
+      [key]:
+        minNum > maxNum
+          ? "Wartość minimalna nie może być większa od maksymalnej"
+          : "",
+    }));
   };
 
   useEffect(() => {
@@ -131,7 +149,6 @@ function Profile() {
         }
 
         const data = await res.json();
-        console.log("PROFILE test:", data);
         setProfileCreated(true);
         setFormData(data);
       } catch (err) {
@@ -155,7 +172,6 @@ function Profile() {
       });
 
       if (!res.ok) {
-        // TODO - probably should display some error or sth
         console.log("Failed to load user data");
         return;
       }
@@ -224,25 +240,51 @@ function Profile() {
 
           <form
             className="flex flex-col gap-3"
-            onSubmit={(e) =>
-              handleSubmit(e, profileEditing ? "edit" : "create")
+            onSubmit={(event) =>
+              handleSubmit(event, profileEditing ? "edit" : "create")
             }
           >
+            <div className="flex gap-3 text-gray-600">
+              <p>Specjalizacja</p>
+              <p
+                className={`${
+                  formData.specialization.length < LIMITS.specialization.min ||
+                  formData.specialization.length > LIMITS.specialization.max
+                    ? "text-red-500"
+                    : ""
+                }`}
+              >
+                ({formData.specialization.length}/{LIMITS.specialization.max})
+              </p>
+            </div>
             <Input
               type="text"
-              placeholder="Specjalizacja"
+              placeholder=""
               value={formData.specialization}
-              onChange={(e) =>
-                setFormData({ ...formData, specialization: e.target.value })
+              onChange={(event) =>
+                setFormData({ ...formData, specialization: event.target.value })
               }
             />
 
+            <div className="flex gap-3 text-gray-600">
+              <p>Opis działalności</p>
+              <p
+                className={`${
+                  formData.description.length < LIMITS.description.min ||
+                  formData.description.length > LIMITS.description.max
+                    ? "text-red-500"
+                    : ""
+                }`}
+              >
+                ({formData.description.length}/{LIMITS.description.max})
+              </p>
+            </div>
             <TextArea
-              placeholder="Opis działalności"
+              placeholder=""
               className="p-3 rounded-xl bg-neutral-900 border border-neutral-700"
               value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
+              onChange={(event) =>
+                setFormData({ ...formData, description: event.target.value })
               }
             />
 
@@ -293,14 +335,14 @@ function Profile() {
                       />
                     )}
                   </div>
-                </div>{" "}
+                </div>
               </div>
             </div>
 
             <div className="text-gray-600 flex flex-col gap-3">
               <p>Kategorie</p>
 
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2 pb-3">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2">
                 {CATEGORIES.map((category) => {
                   const active = formData.categories.includes(category);
 
@@ -317,53 +359,69 @@ function Profile() {
                   );
                 })}
               </div>
+              <p className="mb-3">
+                Jeśli brakuje Ci jakiejś kategorii, skontaktuj się z nami!
+              </p>
             </div>
 
-            <Input
-              type="text"
-              placeholder="Doświadczenie"
-              value={formData.experience}
-              onChange={(e) =>
-                setFormData({ ...formData, experience: e.target.value })
-              }
-            />
-
-            <Input
-              type="text"
-              placeholder="Lokalizacja"
+            <p className="text-gray-600">Lokalizacja</p>
+            <LocationInput
               value={formData.localization}
-              onChange={(e) =>
-                setFormData({ ...formData, localization: e.target.value })
+              onChange={(city) =>
+                setFormData({ ...formData, localization: city })
               }
             />
 
+            <p className="text-gray-600">Numer telefonu</p>
             <Input
               type="number"
-              placeholder="Numer telefonu"
+              placeholder=""
               value={formData.phoneNumber}
-              onChange={(e) =>
-                setFormData({ ...formData, phoneNumber: e.target.value })
+              onChange={(event) =>
+                setFormData({ ...formData, phoneNumber: event.target.value })
               }
             />
 
+            <p className="text-gray-600">Email</p>
             <Input
               type="email"
-              placeholder="Email"
+              placeholder=""
               value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
+              onChange={(event) =>
+                setFormData({ ...formData, email: event.target.value })
               }
             />
 
             <div className="flex flex-col gap-3">
               <p className="text-gray-600">Przedział cenowy</p>
 
+              <LabeledCheckbox
+                id="remote-consultations"
+                label="Konsultacje zdalne"
+                checked={formData.remoteConsultations}
+                onChange={(checked) =>
+                  setFormData({
+                    ...formData,
+                    remoteConsultations: checked,
+                  })
+                }
+              />
+
+              <LabeledCheckbox
+                id="paid-travel"
+                label="Dojazd płatny dodatkowo"
+                checked={formData.paidTravel}
+                onChange={(checked) =>
+                  setFormData({
+                    ...formData,
+                    paidTravel: checked,
+                  })
+                }
+              />
+
               {[
                 { key: "consultation", label: "Konsultacja" },
-                {
-                  key: "hourly",
-                  label: "Stawka godzinowa",
-                },
+                { key: "hourly", label: "Stawka godzinowa" },
                 { key: "project", label: "Projekt" },
               ].map(({ key, label }) => {
                 const item = formData.prices[key];
@@ -390,65 +448,52 @@ function Profile() {
                     </div>
 
                     <div className="flex flex-col gap-3">
-                      <div className="flex gap-2 items-center justify-center">
-                        <p className="text-xs text-neutral-400">Min</p>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-3 items-center">
+                          <p className="text-xs text-neutral-400">Min</p>
 
-                        <input
-                          type="range"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.min}
-                          disabled={!item.enabled}
-                          onChange={(e) =>
-                            updatePrice(key, "min", e.target.value)
-                          }
-                          className="w-full accent-yellow-400"
-                        />
+                          <input
+                            type="number"
+                            min={limits.min}
+                            max={limits.max}
+                            value={item.value.min}
+                            disabled={disabled}
+                            onChange={(event) =>
+                              updatePrice(key, "min", event.target.value)
+                            }
+                            onBlur={() => validatePriceRange(key)}
+                            className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
+                          />
 
-                        <input
-                          type="number"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.min}
-                          disabled={disabled}
-                          onChange={(e) =>
-                            updatePrice(key, "min", e.target.value)
-                          }
-                          className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
-                        />
-                      </div>
+                          <p className="text-xs text-neutral-400">Max</p>
+                          <input
+                            type="number"
+                            min={limits.min}
+                            max={limits.max}
+                            value={item.value.max}
+                            disabled={disabled}
+                            onChange={(event) =>
+                              updatePrice(key, "max", event.target.value)
+                            }
+                            onBlur={() => validatePriceRange(key)}
+                            className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
+                          />
+                        </div>
 
-                      <div className="flex gap-2 items-center justify-center">
-                        <p className="text-xs text-neutral-400">Max</p>
-
-                        <input
-                          type="range"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.max}
-                          disabled={!item.enabled}
-                          onChange={(e) =>
-                            updatePrice(key, "max", e.target.value)
-                          }
-                          className="w-full accent-yellow-400"
-                        />
-
-                        <input
-                          type="number"
-                          min={limits.min}
-                          max={limits.max}
-                          value={item.value.max}
-                          disabled={disabled}
-                          onChange={(e) =>
-                            updatePrice(key, "max", e.target.value)
-                          }
-                          className="w-1/3 bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-sm text-neutral-200"
-                        />
+                        <p className="text-red-500">{errors[key]}</p>
                       </div>
                     </div>
                   </div>
                 );
               })}
+            </div>
+
+            <div className="flex flex-col gap-3 py-2">
+              <p className="text-gray-600">Doświadczenie</p>
+              <ExperienceSection
+                entries={formData.experienceEntries ?? []}
+                onChange={updateExperienceEntries}
+              />
             </div>
 
             <div className="flex flex-col gap-3">
@@ -521,8 +566,13 @@ function Profile() {
                         type="time"
                         className="w-full"
                         disabled={!active}
-                        onChange={(e) =>
-                          updateHour(day, e.target.value, "startTime")
+                        defaultValue={
+                          formData.availability
+                            .find((dayEntry) => dayEntry.day === day)
+                            ?.startTime?.slice(0, 5) ?? "00:00"
+                        }
+                        onChange={(event) =>
+                          updateHour(day, event.target.value, "startTime")
                         }
                       />
 
@@ -532,8 +582,13 @@ function Profile() {
                         type="time"
                         className="w-full"
                         disabled={!active}
-                        onChange={(e) =>
-                          updateHour(day, e.target.value, "endTime")
+                        defaultValue={
+                          formData.availability
+                            .find((dayEntry) => dayEntry.day === day)
+                            ?.endTime?.slice(0, 5) ?? "23:59"
+                        }
+                        onChange={(event) =>
+                          updateHour(day, event.target.value, "endTime")
                         }
                       />
                     </div>
@@ -576,7 +631,6 @@ function Profile() {
 
       {isProfilePreviewModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          {/* overlay click to close */}
           <div
             className="absolute inset-0"
             onClick={() => setIsProfilePreviewModalOpen(false)}

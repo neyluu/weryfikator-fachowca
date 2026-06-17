@@ -19,6 +19,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
 import SearchResults from "./pages/SearchResults";
+import ContractTestPage from "./pages/ContractTestPage.jsx";
 
 function App() {
   return (
@@ -57,6 +58,8 @@ function App() {
               <Route path="account" element={<Account />} />
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
+
+              <Route path="contracts" element={<ContractTestPage />} />
             </Route>
               <Route path="/search" element={<SearchResults />} />
             <Route path="*" element={<NotFound />} />

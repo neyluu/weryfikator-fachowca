@@ -30,6 +30,14 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth ->
                 auth
+                    .requestMatchers(
+                        "/swagger",
+                        "/swagger/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**"
+                    )
+                    .permitAll()
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/profile/search").permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
