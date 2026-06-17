@@ -27,6 +27,7 @@ export default function ConversationList() {
       .finally(() => setLoading(false));
   }, []);
 
+
   console.log(conversations)
 
   if (loading) return <p>Ładowanie...</p>;
@@ -34,18 +35,44 @@ export default function ConversationList() {
 
   return (
     <div>
-      <h2>Wiadomości</h2>
+      <h2 className="text-2xl mb-5">Wiadomości</h2>
 
       {conversations.length === 0 && <p>Brak konwersacji.</p>}
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {conversations.map((c) => (
           <div
             key={c.id}
             onClick={() => navigate(`/dashboard/chat/${c.otherUserId}`)}
-            className="cursor-pointer bg-red-100"
+            className="cursor-pointer flex gap-3 p-3 border-brand border-1 rounded-4xl"
           >
-            <p>Użytkownik #{c.otherUserId}</p>
+            <img
+              src={
+                c.profilePicture
+                  ? c.profilePicture.url
+                  : "/icons/profileIcon.svg"
+              }
+              alt="Profile picture"
+              className="w-24 h-24 border border-neutral-600 rounded-2xl object-cover"
+              draggable="false"
+            />
+
+            <div className="flex flex-col gap-5 flex-1">
+              <div className="flex gap-3 items-center justify-between">
+                <div className="flex gap-5 items-center">
+                  <p className="text-xl font-semiboldbold">{c.fullName}</p>
+                  <p className="">{c.specialization}</p>
+                </div>
+                <p className="">
+                  {c.localization.n}, {c.localization.p}
+                </p>
+              </div>
+
+              <div className="bg-gray-200 px-4 py-2 rounded-2xl border border-gray-300 flex justify-between">
+                <p>{c.lastMessage.content}</p>
+                <p>{new Date(c.lastMessage.sentAt).toLocaleTimeString()}</p>
+              </div>
+            </div>
           </div>
         ))}
       </div>
