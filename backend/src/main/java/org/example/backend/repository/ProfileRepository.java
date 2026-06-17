@@ -22,7 +22,7 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
             )
             AND
             (:city IS NULL OR :city = '' OR
-                LOWER(p.localization) LIKE LOWER(CONCAT('%', :city, '%'))
+                LOWER(p.localization.city) LIKE LOWER(CONCAT('%', :city, '%'))
             )
     """)
     List<Profile> search(@Param("service") String service, @Param("city") String city);

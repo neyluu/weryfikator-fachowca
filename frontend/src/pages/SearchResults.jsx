@@ -151,10 +151,10 @@ export default function SearchResults() {
 
                                     <div className="flex items-center gap-2 text-sm text-neutral-500 font-medium">
                                         <span>{specialist.specialization}</span>
-                                        {specialist.localization && (
+                                        {specialist.city && (
                                             <>
                                                 <span>•</span>
-                                                <span>{specialist.localization}</span>
+                                                <span>{specialist.city}</span>
                                             </>
                                         )}
                                     </div>

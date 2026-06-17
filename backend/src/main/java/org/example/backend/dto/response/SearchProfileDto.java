@@ -9,7 +9,8 @@ public record SearchProfileDto(
         String specialization,
         String description,
         String experience,
-        String localization,
+        String city,
+        String voivodeship,
         PricesPayload prices
 ) {
     public record PriceRangePayload(double min, double max) {}
@@ -35,6 +36,13 @@ public record SearchProfileDto(
                     firstName = fullName;
                 }
             }
+        }
+
+        String city = "";
+        String voivodeship = "";
+        if (p.getLocalization() != null) {
+            city = p.getLocalization().getCity() != null ? p.getLocalization().getCity() : "";
+            voivodeship = p.getLocalization().getVoivodeship() != null ? p.getLocalization().getVoivodeship() : "";
         }
 
         var prices = new PricesPayload(
@@ -65,7 +73,8 @@ public record SearchProfileDto(
                 p.getSpecialization(),
                 p.getDescription(),
                 p.getExperience(),
-                p.getLocalization(),
+                city,
+                voivodeship,
                 prices
         );
     }
