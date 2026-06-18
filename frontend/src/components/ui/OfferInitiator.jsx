@@ -5,7 +5,6 @@ function OfferInitiator({ onSendOffer, currentOffer }) {
   const [open, setOpen] = useState(false);
 
   if (currentOffer && currentOffer.status === "PENDING") return null;
-  if (currentOffer && currentOffer.status === "ACCEPTED") return null;
 
   return (
     <div className="px-4 pb-2">
@@ -33,13 +32,13 @@ function OfferInitiator({ onSendOffer, currentOffer }) {
                 setOpen(false);
               }
             }}
-            className="bg-brand  rounded-full px-4 py-1 text-sm hover:brightness-90"
+            className="bg-brand rounded-full px-4 py-1 text-sm hover:brightness-90"
           >
             Wyślij ofertę
           </button>
           <button
             onClick={() => setOpen(false)}
-            className="text-neutral-400 hover:text-black text-sm"
+            className="text-neutral-400 hover:text-white text-sm"
           >
             Anuluj
           </button>

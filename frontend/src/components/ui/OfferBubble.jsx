@@ -1,11 +1,18 @@
 import { useState } from "react";
 import Button from "./Button.jsx";
 
-function OfferBubble({ offer, isMine, userRole, onAccept, onCounter }) {
+function OfferBubble({
+  offer,
+  isMine,
+  userRole,
+  onAccept,
+  onCounter,
+  isLatest,
+}) {
   const [counterAmount, setCounterAmount] = useState("");
   const [showCounter, setShowCounter] = useState(false);
 
-  const canRespond = !isMine && offer.status === "PENDING";
+  const canRespond = !isMine && offer.status === "PENDING" && isLatest;
 
   if (offer.status === "ACCEPTED") {
     return (
@@ -14,9 +21,7 @@ function OfferBubble({ offer, isMine, userRole, onAccept, onCounter }) {
           <p>
             ✓ Zaakceptowano cenę: <strong>{offer.amount} zł</strong>
           </p>
-          <Button className="h-5">
-            Stwórz umowę
-          </Button>
+          <Button className="h-5">Stwórz umowę</Button>
         </div>
       </div>
     );
@@ -57,13 +62,17 @@ function OfferBubble({ offer, isMine, userRole, onAccept, onCounter }) {
                   onClick={() => {
                     if (counterAmount) onCounter(Number(counterAmount));
                   }}
-                  className="bg-brand  rounded-full px-3 py-1 text-sm hover:brightness-90"
+                  className="bg-brand rounded-full px-3 py-1 text-sm hover:brightness-90"
                 >
                   Wyślij
                 </button>
               </div>
             )}
           </div>
+        )}
+
+        {!isLatest && offer.status === "PENDING" && (
+          <p className="text-xs text-neutral-500 italic">Nieaktualna oferta</p>
         )}
       </div>
     </div>

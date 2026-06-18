@@ -231,7 +231,7 @@ export default function Chat() {
           </p>
         )}
 
-        {messages.map((msg) => {
+        {messages.map((msg, index) => {
           let offer = null;
           try {
             const parsed = JSON.parse(msg.content);
@@ -239,6 +239,15 @@ export default function Chat() {
           } catch {}
 
           if (offer) {
+            const lastOfferIndex = messages.reduce((last, m, i) => {
+              try {
+                const p = JSON.parse(m.content);
+                return p.type === "OFFER" ? i : last;
+              } catch {
+                return last;
+              }
+            }, -1);
+
             return (
               <OfferBubble
                 key={msg.id}
@@ -247,6 +256,7 @@ export default function Chat() {
                 userRole={user?.role}
                 onAccept={acceptOffer}
                 onCounter={counterOffer}
+                isLatest={index === lastOfferIndex}
               />
             );
           }
