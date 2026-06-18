@@ -10,6 +10,7 @@ public record ConversationDto(
         Long otherUserId,
         MessageDto lastMessage,
         String fullName,
+        String email,
         String specialization,
         LocalizationDto localization,
         ImageDto profilePicture,

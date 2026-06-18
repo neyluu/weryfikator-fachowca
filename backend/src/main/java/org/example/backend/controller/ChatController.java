@@ -95,6 +95,7 @@ public class ChatController {
                     otherUserId,
                     last,
                     user.getFullName(),
+                    user.getEmail(),
                     profile.getSpecialization(),
                     new LocalizationDto(
                         profile.getLocalization().getCity(),
@@ -110,6 +111,7 @@ public class ChatController {
                 otherUserId,
                 last,
                 user.getFullName(),
+                user.getEmail(),
                 "Brak danych",
                 new LocalizationDto(
                         "Brak",

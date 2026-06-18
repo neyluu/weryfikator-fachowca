@@ -66,4 +66,16 @@ public class ProfileController {
 
         return ProfileDto.of(profile);
     }
+
+    @Transactional(readOnly = true)
+    @GetMapping("/{id}")
+    public ProfileDto getById(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Profile profile = profileRepository.findByUser(user)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+
+        return ProfileDto.of(profile);
+    }
 }
