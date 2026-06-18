@@ -12,7 +12,7 @@ function OfferInitiator({ onSendOffer, currentOffer }) {
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="text-sm text-brand hover:underline"
+          className="text-sm hover:underline"
         >
           + Zaproponuj cenę
         </button>
@@ -23,7 +23,7 @@ function OfferInitiator({ onSendOffer, currentOffer }) {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Kwota w zł"
-            className="flex-1 bg-neutral-800 border border-neutral-600 rounded-full px-3 py-1 text-sm outline-none focus:border-brand"
+            className="flex-1 bg-neutral-800/30 border border-neutral-600 rounded-full px-3 py-1 text-sm outline-none focus:border-brand"
           />
           <button
             onClick={() => {
@@ -33,13 +33,13 @@ function OfferInitiator({ onSendOffer, currentOffer }) {
                 setOpen(false);
               }
             }}
-            className="bg-brand text-white rounded-full px-4 py-1 text-sm hover:brightness-90"
+            className="bg-brand  rounded-full px-4 py-1 text-sm hover:brightness-90"
           >
             Wyślij ofertę
           </button>
           <button
             onClick={() => setOpen(false)}
-            className="text-neutral-400 hover:text-white text-sm"
+            className="text-neutral-400 hover:text-black text-sm"
           >
             Anuluj
           </button>

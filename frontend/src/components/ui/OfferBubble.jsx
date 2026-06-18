@@ -51,13 +51,13 @@ function OfferBubble({ offer, isMine, userRole, onAccept, onCounter }) {
                   value={counterAmount}
                   onChange={(e) => setCounterAmount(e.target.value)}
                   placeholder="Kwota w zł"
-                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded-full px-3 py-1 text-sm outline-none focus:border-brand"
+                  className="flex-1 bg-neutral-800/30 border border-neutral-600 rounded-full px-3 py-1 text-sm outline-none focus:border-brand"
                 />
                 <button
                   onClick={() => {
                     if (counterAmount) onCounter(Number(counterAmount));
                   }}
-                  className="bg-brand text-white rounded-full px-3 py-1 text-sm hover:brightness-90"
+                  className="bg-brand  rounded-full px-3 py-1 text-sm hover:brightness-90"
                 >
                   Wyślij
                 </button>
