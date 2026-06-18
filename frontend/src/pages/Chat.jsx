@@ -201,7 +201,7 @@ export default function Chat() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col gap-2 p-4">
+      <div className="flex-1 overflow-y-auto flex flex-col gap-2 p-4 max-h-140">
         {messages.length === 0 && (
           <p className="text-neutral-400 text-center mt-10">
             Brak wiadomości. Napisz coś!
