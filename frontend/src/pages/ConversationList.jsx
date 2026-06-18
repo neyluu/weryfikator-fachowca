@@ -41,6 +41,24 @@ export default function ConversationList() {
       .finally(() => setLoading(false));
   }
 
+  function formatLastMessage(message, currentUserId) {
+    console.log(message)
+
+    if (!message) return "";
+    try {
+      const parsed = JSON.parse(message.content);
+      if (parsed.type === "OFFER") {
+        return message.senderId === currentUserId
+          ? `Twoja oferta: ${parsed.amount} zł`
+          : `Oferta: ${parsed.amount} zł`;
+      }
+    } catch {}
+
+    return message.senderId === currentUserId
+      ? `Ty: ${message.content}`
+      : message.content;
+  }
+
   if (loading) return <p>Ładowanie...</p>;
   if (error) return <p>{error}</p>;
 
@@ -93,11 +111,9 @@ export default function ConversationList() {
 
               <div className="text-sm flex flex-col gap-1.5">
                 <p>Ostatnia wiadomość:</p>
+
                 <div className="bg-gray-200 px-4 py-2 rounded-2xl border border-gray-300 flex justify-between">
-                  <p>
-                    {c.lastMessage.senderId === user.userId ? "Ty: " : ""}
-                    {c.lastMessage.content}
-                  </p>
+                  <p>{formatLastMessage(c.lastMessage, user.userId)}</p>
                   <p>{new Date(c.lastMessage.sentAt).toLocaleTimeString()}</p>
                 </div>
               </div>
