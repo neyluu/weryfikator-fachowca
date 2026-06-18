@@ -60,11 +60,15 @@ export default function ConversationList() {
               <div className="flex gap-3 items-center justify-between">
                 <div className="flex gap-5 items-center">
                   <p className="text-xl font-semiboldbold">{c.fullName}</p>
-                  <p className="">{c.specialization}</p>
+                  <p className="">
+                    {c.specialization !== "Brak danych" ? c.specialization : ""}
+                  </p>
                 </div>
-                <p className="">
-                  {c.localization.n}, {c.localization.p}
-                </p>
+                {
+                  c.localization.n !== "Brak" && c.localization.p !== "danych"
+                    ? (<p className="">{c.localization.n}, {c.localization.p}</p>)
+                    : ("")
+                }
               </div>
 
               <div className="text-sm flex flex-col gap-1.5">
