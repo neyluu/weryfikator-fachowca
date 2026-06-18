@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 function apiFetch(path, options = {}) {
   const token = localStorage.getItem("token");
@@ -18,6 +19,7 @@ export default function ConversationList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { user, _ } = useAuth();
 
   useEffect(() => {
     apiFetch("/api/chat/conversations")
@@ -26,9 +28,6 @@ export default function ConversationList() {
       .catch(() => setError("Nie udało się załadować konwersacji."))
       .finally(() => setLoading(false));
   }, []);
-
-
-  console.log(conversations)
 
   if (loading) return <p>Ładowanie...</p>;
   if (error) return <p>{error}</p>;
@@ -68,9 +67,15 @@ export default function ConversationList() {
                 </p>
               </div>
 
-              <div className="bg-gray-200 px-4 py-2 rounded-2xl border border-gray-300 flex justify-between">
-                <p>{c.lastMessage.content}</p>
-                <p>{new Date(c.lastMessage.sentAt).toLocaleTimeString()}</p>
+              <div className="text-sm flex flex-col gap-1.5">
+                <p>Ostatnia wiadomość:</p>
+                <div className="bg-gray-200 px-4 py-2 rounded-2xl border border-gray-300 flex justify-between">
+                  <p>
+                    {c.lastMessage.senderId === user.userId ? "Ty: " : ""}
+                    {c.lastMessage.content}
+                  </p>
+                  <p>{new Date(c.lastMessage.sentAt).toLocaleTimeString()}</p>
+                </div>
               </div>
             </div>
           </div>
