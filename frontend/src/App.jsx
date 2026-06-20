@@ -19,6 +19,9 @@ import { AuthProvider } from "./context/AuthContext";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
 import ContractTestPage from "./pages/ContractTestPage.jsx";
+import ContactMeCard from "./components/ui/ContactMeCard.jsx";
+import Chat from "./pages/Chat.jsx";
+import ConversationList from "./pages/ConversationList.jsx";
 
 function App() {
   return (
@@ -59,6 +62,13 @@ function App() {
               <Route path="settings" element={<Settings />} />
 
               <Route path="contracts" element={<ContractTestPage />} />
+              <Route path="chat" element={<ConversationList />} />
+              <Route path="chat/:professionalId" element={<Chat />} />
+
+              <Route
+                path="contact-me"
+                element={<ContactMeCard professionalId={1} />}
+              />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -37,16 +37,13 @@ public class SecurityConfig {
                         "/v3/api-docs/**"
                     )
                     .permitAll()
-                    .requestMatchers("/auth/**")
-                    .permitAll()
-                    .requestMatchers("/admin/**")
-                    .hasRole("ADMIN")
-                    .requestMatchers("/specialist/**")
-                    .hasAnyRole("ADMIN", "SPECIALIST")
-                    .requestMatchers("/profile/**")
-                    .authenticated()
-                    .anyRequest()
-                    .authenticated()
+                    .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                    .requestMatchers("/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/specialist/**").hasAnyRole("ADMIN", "SPECIALIST")
+                    .requestMatchers("/chat/**").authenticated()
+                    .requestMatchers("/profile/**").authenticated()
+                    .anyRequest().authenticated()
             )
             .addFilterBefore(
                 new JwtAuthFilter(jwtUtil),
