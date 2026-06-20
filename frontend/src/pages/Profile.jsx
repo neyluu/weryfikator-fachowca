@@ -59,10 +59,14 @@ function Profile() {
 
   const handleSubmit = async (event, mode = "create") => {
     event.preventDefault();
-
     setErrorMessage("");
 
-    const validationResult = validateForm(formData);
+    const dataToSubmit = {
+      ...formData,
+      profilePicture: formData.profilePicture || null,
+    };
+
+    const validationResult = validateForm(dataToSubmit);
     if (!validationResult.success) {
       setErrorMessage(validationResult.message);
       return;
@@ -71,14 +75,10 @@ function Profile() {
     const token = localStorage.getItem("token");
 
     const processedImages = await Promise.all(
-      formData.images.map(async (img) => {
+      dataToSubmit.images.map(async (img) => {
         if (img.file instanceof File) {
           const base64 = await convertToBase64(img.file);
-          return {
-            id: img.id,
-            file: {},
-            url: base64,
-          };
+          return { id: img.id, file: {}, url: base64 };
         }
         return img;
       }),
@@ -93,7 +93,7 @@ function Profile() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          ...formData,
+          ...dataToSubmit,
           images: processedImages,
         }),
       },
