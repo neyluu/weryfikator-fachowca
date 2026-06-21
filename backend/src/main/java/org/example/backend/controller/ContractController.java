@@ -1,8 +1,10 @@
 package org.example.backend.controller;
 
 import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.request.contract.GenerateContractRequest;
 import org.example.backend.dto.response.contract.ContractSummaryDto;
@@ -25,8 +27,8 @@ public class ContractController {
 
     @PostMapping("/generate")
     public ResponseEntity<?> generate(
-        @Valid @RequestBody GenerateContractRequest request,
-        Authentication authentication
+            @Valid @RequestBody GenerateContractRequest request,
+            Authentication authentication
     ) {
         User currentUser = resolveUser(authentication);
         Long contractId = contractService.generateAndSave(request, currentUser);
@@ -35,32 +37,34 @@ public class ContractController {
 
     @GetMapping("/{id}/download")
     public ResponseEntity<byte[]> download(
-        @PathVariable Long id,
-        Authentication authentication
+            @PathVariable Long id,
+            Authentication authentication
     ) {
         User currentUser = resolveUser(authentication);
         byte[] pdfBytes = contractService.getPdfBytes(id, currentUser);
 
         return ResponseEntity.ok()
-            .header(
-                HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"umowa_" + id + ".pdf\""
-            )
-            .contentType(MediaType.APPLICATION_PDF)
-            .body(pdfBytes);
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"umowa_" + id + ".pdf\""
+                )
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<ContractSummaryDto>> myContracts(
-        Authentication authentication
+            Authentication authentication
     ) {
         User currentUser = resolveUser(authentication);
         return ResponseEntity.ok(contractService.getMyContracts(currentUser));
     }
 
     private User resolveUser(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+
         return userRepository
-            .findByEmail(authentication.getName())
-            .orElseThrow();
+                .findById(userId)
+                .orElseThrow();
     }
 }
