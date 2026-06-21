@@ -31,4 +31,19 @@ const CATEGORIES = [
   "Ogrodnictwo",
 ];
 
-export { DAYS, PRICE_LIMITS, CATEGORIES };
+const LIMITS = {
+  specialization: {
+    min: 0,
+    max: 40
+  },
+  description: {
+    min: 50,
+    max: 1000
+  },
+  experience: {
+    min: 10,
+    max: 100
+  }
+}
+
+export { DAYS, PRICE_LIMITS, CATEGORIES, LIMITS };

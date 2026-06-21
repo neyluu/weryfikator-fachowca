@@ -28,16 +28,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             if (jwtUtil.validateToken(token)) {
-                String email = jwtUtil.extractEmail(token);
+                Long userId = jwtUtil.extractUserId(token);
                 String role = jwtUtil.extractRole(token);
                 var auth = new UsernamePasswordAuthenticationToken(
-                    email,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                        userId,
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
                 );
                 SecurityContextHolder.getContext().setAuthentication(auth);
-            }
-        }
+            }        }
         chain.doFilter(req, res);
     }
 }

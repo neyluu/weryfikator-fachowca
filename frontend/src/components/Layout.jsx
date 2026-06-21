@@ -43,7 +43,10 @@ const Layout = ({ children }) => {
               <a href="/dashboard">Dashboard</a>
             )}
             {user && location.pathname.startsWith("/dashboard") && (
-              <span>{getGreeting(user.fullName?.split(" ")[0])}</span>
+              <div className="flex gap-10">
+                <a href="/">Strona głowna</a>
+                <span>{getGreeting(user.fullName?.split(" ")[0])}</span>
+              </div>
             )}
             {user && (
               <Button look="secondary" onClick={logout}>

@@ -29,13 +29,21 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth ->
                 auth
-                    .requestMatchers("/auth/**")
+                    .requestMatchers(
+                        "/swagger",
+                        "/swagger/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**"
+                    )
                     .permitAll()
+                    .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .requestMatchers("/specialist/**").hasAnyRole("ADMIN", "SPECIALIST")
+                    .requestMatchers("/chat/**").authenticated()
                     .requestMatchers("/profile/**").authenticated()
-                    .anyRequest()
-                    .authenticated()
+                    .anyRequest().authenticated()
             )
             .addFilterBefore(
                 new JwtAuthFilter(jwtUtil),
