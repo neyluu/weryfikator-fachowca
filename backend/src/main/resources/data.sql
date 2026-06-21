@@ -1,4 +1,4 @@
--- docker exec -i wf-postgres-db psql -U root -d wf_db < seed.sql
+-- docker exec -i wf-postgres-db psql -U root -d wf_db < data.sql
 -- Hasło dla WSZYSTKICH kont testowych: Test1234!
 
 BEGIN;
