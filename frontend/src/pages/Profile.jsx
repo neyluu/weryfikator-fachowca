@@ -609,7 +609,15 @@ function Profile() {
               <Button className="flex-1" type="submit">
                 Zapisz profil
               </Button>
-              <Button className="flex-1" look="secondary" type="button">
+              <Button
+                className="flex-1"
+                look="secondary"
+                type="button"
+                onClick={() => {
+                  setProfileCreation(false);
+                  setProfileEditing(false);
+                }}
+              >
                 Anuluj
               </Button>
             </div>
