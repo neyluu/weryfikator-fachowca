@@ -3,6 +3,7 @@ package org.example.backend.config;
 import org.example.backend.util.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -38,6 +39,7 @@ public class SecurityConfig {
                     )
                     .permitAll()
                     .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/profile/search").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .requestMatchers("/specialist/**").hasAnyRole("ADMIN", "SPECIALIST")

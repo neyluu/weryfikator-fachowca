@@ -3,6 +3,7 @@ package org.example.backend.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.request.profile.CreateProfileRequest;
 import org.example.backend.dto.request.profile.ProfileDto;
+import org.example.backend.dto.response.SearchProfileDto;
 import org.example.backend.entity.Profile;
 import org.example.backend.entity.User;
 import org.example.backend.repository.ProfileRepository;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -24,6 +26,18 @@ public class ProfileController {
     private final ProfileService profileService = new ProfileService();
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
+
+    @Transactional(readOnly = true)
+    @GetMapping("/search")
+    public List<SearchProfileDto> search(
+            @RequestParam(required = false, defaultValue = "") String service,
+            @RequestParam(required = false, defaultValue = "") String city
+    ) {
+        return profileRepository.search(service, city)
+                .stream()
+                .map(SearchProfileDto::of)
+                .toList();
+    }
 
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody CreateProfileRequest dto, Authentication auth) {

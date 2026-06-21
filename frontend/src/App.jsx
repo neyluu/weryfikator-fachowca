@@ -71,9 +71,9 @@ function App() {
                 element={<ContactMeCard professionalId={1} />}
               />
             </Route>
-              <Route path="/search" element={<SearchResults />} />
-            <Route path="*" element={<NotFound />} />
 
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
       </AuthProvider>
