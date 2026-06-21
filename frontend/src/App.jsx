@@ -18,6 +18,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
+import SearchResults from "./pages/SearchResults";
 import ContractTestPage from "./pages/ContractTestPage.jsx";
 import ContactMeCard from "./components/ui/ContactMeCard.jsx";
 import Chat from "./pages/Chat.jsx";
@@ -70,7 +71,9 @@ function App() {
                 element={<ContactMeCard professionalId={1} />}
               />
             </Route>
+              <Route path="/search" element={<SearchResults />} />
             <Route path="*" element={<NotFound />} />
+
           </Routes>
         </Layout>
       </AuthProvider>
