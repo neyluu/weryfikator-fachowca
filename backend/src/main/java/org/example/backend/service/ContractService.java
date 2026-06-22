@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.request.contract.GenerateContractRequest;
 import org.example.backend.dto.response.contract.ContractSummaryDto;
 import org.example.backend.entity.ContractType;
+import org.example.backend.entity.Conversation;
 import org.example.backend.entity.GeneratedContract;
 import org.example.backend.entity.User;
+import org.example.backend.repository.ConversationRepository;
 import org.example.backend.repository.GeneratedContractRepository;
+import org.example.backend.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,22 +20,53 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class ContractService {
 
+    private final UserRepository userRepository;
+    private final ConversationRepository conversationRepository;
     private final ContractPdfService contractPdfService;
     private final GeneratedContractRepository contractRepository;
 
     @Transactional
     public Long generateAndSave(
         GenerateContractRequest request,
-        User generatedByUser
+        User currentUser
     ) {
         ContractType contractType = parseContractType(request.contractType());
 
         byte[] pdfBytes = contractPdfService.generate(request, contractType);
 
+        Conversation conversation = conversationRepository
+            .findById(request.conversationId())
+            .orElseThrow(() ->
+                new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Nie znaleziono rozmowy"
+                )
+            );
+
+        User user1 = userRepository
+            .findById(conversation.getUser1Id())
+            .orElseThrow();
+
+        User user2 = userRepository
+            .findById(conversation.getUser2Id())
+            .orElseThrow();
+
+        User clientUser;
+        User specialistUser;
+
+        if ("SPECIALIST".equals(user1.getRole().name())) {
+            specialistUser = user1;
+            clientUser = user2;
+        } else {
+            specialistUser = user2;
+            clientUser = user1;
+        }
+
         GeneratedContract contract = new GeneratedContract();
         contract.setContractType(contractType);
         contract.setPdfData(pdfBytes);
-        contract.setGeneratedByUser(generatedByUser);
+        contract.setClientUser(clientUser);
+        contract.setSpecialistUser(specialistUser);
 
         // Mapowanie Zleceniodawcy
         contract.setOrdererType(request.ordererType());
@@ -90,7 +124,7 @@ public class ContractService {
     @Transactional(readOnly = true)
     public byte[] getPdfBytes(Long contractId, User requestingUser) {
         GeneratedContract contract = contractRepository
-            .findByIdAndGeneratedByUser(contractId, requestingUser)
+            .findById(contractId)
             .orElseThrow(() ->
                 new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
@@ -98,16 +132,35 @@ public class ContractService {
                 )
             );
 
+        boolean hasAccess =
+            contract.getClientUser().getId().equals(requestingUser.getId()) ||
+            contract.getSpecialistUser().getId().equals(requestingUser.getId());
+
+        if (!hasAccess) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "Brak dostępu do tej umowy"
+            );
+        }
+
         return contract.getPdfData();
     }
 
     @Transactional(readOnly = true)
     public List<ContractSummaryDto> getMyContracts(User user) {
-        return contractRepository
-            .findByGeneratedByUserOrderByGeneratedAtDesc(user)
-            .stream()
-            .map(ContractSummaryDto::of)
-            .toList();
+        List<GeneratedContract> contracts;
+
+        if ("SPECIALIST".equals(user.getRole().name())) {
+            contracts =
+                contractRepository.findBySpecialistUserOrderByGeneratedAtDesc(
+                    user
+                );
+        } else {
+            contracts =
+                contractRepository.findByClientUserOrderByGeneratedAtDesc(user);
+        }
+
+        return contracts.stream().map(ContractSummaryDto::of).toList();
     }
 
     private ContractType parseContractType(String contractType) {

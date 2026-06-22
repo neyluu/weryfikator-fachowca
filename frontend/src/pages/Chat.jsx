@@ -213,6 +213,7 @@ export default function Chat() {
 
       // Łączymy dane zebrane z czatu, oferty oraz domyślne waluty
       const fullFormPayload = {
+        conversationId,
         contractType: contractState.contractType,
         ordererType: contractState.ordererType,
         ...contractState.ordererData,
@@ -222,7 +223,7 @@ export default function Chat() {
         remunerationCurrency: "PLN",
       };
 
-      const response = await fetch("/api/specialist/contract/generate", {
+      const response = await fetch("/api/contracts/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -253,12 +254,9 @@ export default function Chat() {
     setIsDownloadingContract(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        `/api/specialist/contract/${contractId}/download`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await fetch(`/api/contracts/${contractId}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!response.ok) return;
 
       const blob = await response.blob();
@@ -423,7 +421,7 @@ export default function Chat() {
             <p className="text-xs text-neutral-500 mt-0.5">
               {!contractState.finalContract
                 ? "Uzupełnijcie dane, aby wygenerować oficjalną umowę PDF."
-                : "Umowa została pomyślnie wygenerowana i podpisana!"}
+                : "Umowa została zaakceptowana i pomyślnie wygenerowana!"}
             </p>
 
             {/* Statusy kroków */}
@@ -481,9 +479,7 @@ export default function Chat() {
                   onClick={handleGenerateFinalContract}
                   disabled={isGeneratingContract}
                 >
-                  {isGeneratingContract
-                    ? "Generowanie..."
-                    : "Generuj umowę PDF"}
+                  {isGeneratingContract ? "Generowanie..." : "Generuj umowę"}
                 </Button>
               )}
 
@@ -495,7 +491,7 @@ export default function Chat() {
                 }
                 disabled={isDownloadingContract}
               >
-                {isDownloadingContract ? "Pobieranie..." : "Pobierz Umowę PDF"}
+                {isDownloadingContract ? "Pobieranie..." : "Pobierz umowę"}
               </Button>
             )}
           </div>

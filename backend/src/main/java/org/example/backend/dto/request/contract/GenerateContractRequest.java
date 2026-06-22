@@ -3,6 +3,8 @@ package org.example.backend.dto.request.contract;
 import jakarta.validation.constraints.NotBlank;
 
 public record GenerateContractRequest(
+    Long conversationId,
+
     @NotBlank String contractType,
     @NotBlank String ordererType,
 

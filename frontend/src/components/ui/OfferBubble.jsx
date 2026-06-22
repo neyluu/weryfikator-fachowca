@@ -17,7 +17,7 @@ function OfferBubble({
   if (offer.status === "ACCEPTED") {
     return (
       <div className="flex justify-center my-2">
-        <div className="bg-green-800 text-green-200 px-4 py-2 rounded-2xl text-sm flex justify-between gap-3 items-center w-full max-w-md">
+        <div className="bg-green-800 text-green-200 px-4 py-2 rounded-2xl text-sm flex justify-between gap-3 items-center w-fit max-w-md">
           <div className="flex flex-col">
             <p>
               ✓ Zaakceptowano cenę: <strong>{offer.amount} zł</strong>
@@ -28,7 +28,6 @@ function OfferBubble({
               </p>
             )}
           </div>
-          <Button className="h-5 whitespace-nowrap">Stwórz umowę</Button>
         </div>
       </div>
     );
@@ -47,14 +46,18 @@ function OfferBubble({
           </p>
         )}
 
-        <p className="text-2xl font-semibold">{offer.amount} zł</p>
+        <p
+          className={`text-2xl font-semibold ${!isLatest && offer.status === "PENDING" ? "line-through decoration-2" : ""}`}
+        >
+          {offer.amount} zł
+        </p>
 
         {canRespond && (
           <div className="flex flex-col gap-2 mt-1">
             <button
               onClick={onAccept}
               disabled={showCounter && counterAmount.trim() !== ""}
-              className="bg-green-700 hover:bg-green-600 text-white rounded-full px-4 py-1 text-sm transition-colors"
+              className={`${showCounter && counterAmount.trim() !== "" ? "bg-green-800/50 cursor-not-allowed" : "bg-green-700 hover:bg-green-600"} text-white rounded-full px-4 py-1 text-sm transition-colors`}
             >
               Akceptuj
             </button>
