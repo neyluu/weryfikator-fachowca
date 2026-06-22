@@ -216,8 +216,33 @@ export default function Chat() {
         conversationId,
         contractType: contractState.contractType,
         ordererType: contractState.ordererType,
-        ...contractState.ordererData,
-        ...contractState.specialistData,
+
+        ordererFullName: contractState.ordererData?.ordererFullName,
+        ordererPesel: contractState.ordererData?.ordererPesel,
+        ordererIdNumber: contractState.ordererData?.ordererIdNumber,
+        ordererAddress: contractState.ordererData?.ordererAddress,
+        ordererCity: contractState.ordererData?.ordererCity,
+        ordererPostalCode: contractState.ordererData?.ordererPostalCode,
+
+        ordererCompanyName: contractState.ordererData?.ordererCompanyName,
+        ordererNip: contractState.ordererData?.ordererNip,
+        ordererRegon: contractState.ordererData?.ordererRegon,
+        ordererKrs: contractState.ordererData?.ordererKrs,
+        ordererRepresentativeName:
+          contractState.ordererData?.ordererRepresentativeName,
+        ordererRepresentativeTitle:
+          contractState.ordererData?.ordererRepresentativeTitle,
+
+        specialistFullName: contractState.specialistData?.specialistFullName,
+        specialistPesel: contractState.specialistData?.specialistPesel,
+        specialistIdNumber: contractState.specialistData?.specialistIdNumber,
+        specialistAddress: contractState.specialistData?.specialistAddress,
+        specialistCity: contractState.specialistData?.specialistCity,
+        specialistPostalCode:
+          contractState.specialistData?.specialistPostalCode,
+        specialistEmail: contractState.specialistData?.specialistEmail,
+        specialistPhone: contractState.specialistData?.specialistPhone,
+
         subjectDescription: currentOffer?.description || "",
         remunerationAmount: String(currentOffer?.amount || ""),
         remunerationCurrency: "PLN",
@@ -747,7 +772,7 @@ function ContractFormModal({
                     onChange={(e) =>
                       handleChange("specialistAddress", e.target.value)
                     }
-                    placeholder="ul. Kwiatowa 12/3"
+                    placeholder="Kwiatowa 12/3"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -918,7 +943,7 @@ function ContractFormModal({
                       onChange={(e) =>
                         handleChange("ordererAddress", e.target.value)
                       }
-                      placeholder="ul. Prosta 5"
+                      placeholder="Prosta 5"
                     />
                   </div>
                   <div className="flex flex-col">

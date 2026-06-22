@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const DESCRIPTION_LIMIT = 500;
 
-function OfferInitiator({ onSendOffer, currentOffer }) {
+function OfferInitiator({ onSendOffer, currentOffer, disabled }) {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [open, setOpen] = useState(false);
