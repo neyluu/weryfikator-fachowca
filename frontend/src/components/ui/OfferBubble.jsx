@@ -53,6 +53,7 @@ function OfferBubble({
           <div className="flex flex-col gap-2 mt-1">
             <button
               onClick={onAccept}
+              disabled={showCounter && counterAmount.trim() !== ""}
               className="bg-green-700 hover:bg-green-600 text-white rounded-full px-4 py-1 text-sm transition-colors"
             >
               Akceptuj

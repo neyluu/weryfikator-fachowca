@@ -297,13 +297,13 @@ export default function Chat() {
   const isMine = (msg) => msg.senderId === user.userId;
 
   return (
-    <div className="flex flex-col h-full bg-white text-neutral-900">
+    <div className="flex flex-col h-full text-neutral-100">
       {/* Header czatu */}
-      <div className="flex items-center justify-between p-4 border-b border-neutral-200 bg-neutral-50">
+      <div className="flex items-center justify-between p-4 border-b border-neutral-700">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/dashboard/chat")}
-            className="text-neutral-500 hover:text-brand transition-colors p-1"
+            className="text-neutral-400 hover:text-brand transition-colors p-1"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -323,13 +323,13 @@ export default function Chat() {
           <img
             src={conversation?.profilePicture?.url ?? "/icons/profileIcon.svg"}
             alt="Profile"
-            className="w-12 h-12 rounded-2xl object-cover border border-neutral-200"
+            className="w-12 h-12 rounded-2xl object-cover border border-neutral-600"
           />
           <div>
             <p className="text-lg font-semibold">
               {conversation?.fullName ?? `Użytkownik #${professionalId}`}
             </p>
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-neutral-400">
               {conversation?.specialization !== "Brak danych"
                 ? conversation?.specialization
                 : ""}
@@ -393,11 +393,15 @@ export default function Chat() {
               className={`flex flex-col gap-1 ${isMine(msg) ? "items-end" : "items-start"}`}
             >
               <div
-                className={`max-w-[70%] px-4 py-2 rounded-3xl text-sm ${isMine(msg) ? "bg-brand text-white rounded-br-sm" : "bg-neutral-100 text-neutral-900 rounded-bl-sm"}`}
+                className={`max-w-[70%] px-4 py-2 rounded-3xl text-sm text-neutral-100 ${
+                  isMine(msg)
+                    ? "bg-brand rounded-br-sm"
+                    : "bg-neutral-800 rounded-bl-sm"
+                }`}
               >
                 {msg.content}
               </div>
-              <small className="text-neutral-400 text-xs px-1">
+              <small className="text-neutral-500 text-xs px-1">
                 {new Date(msg.sentAt).toLocaleTimeString()}
               </small>
             </div>
@@ -408,7 +412,7 @@ export default function Chat() {
 
       {/* DEDYKOWANY PANEL MANAGERA UMOWY (UX/UI NOWOŚĆ) */}
       {currentOffer?.status === "ACCEPTED" && (
-        <div className="mx-4 mb-2 p-4 bg-neutral-50 border border-neutral-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-fadeIn">
+        <div className="mx-4 mb-2 p-4 bg-neutral-50 border border-neutral-700 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-fadeIn">
           <div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
@@ -505,13 +509,13 @@ export default function Chat() {
         <OfferInitiator onSendOffer={sendOffer} currentOffer={currentOffer} />
       )}
 
-      <div className="p-4 border-t border-neutral-200 flex gap-3 items-center bg-white">
+      <div className="p-4 border-t border-neutral-700 flex gap-3 items-center">
         <input
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage(e)}
           placeholder="Napisz wiadomość..."
-          className="flex-1 bg-neutral-50 border border-neutral-300 rounded-full px-4 py-2 text-sm outline-none focus:border-brand transition-colors text-neutral-900"
+          className="flex-1 bg-neutral-800/30 border border-neutral-600 rounded-full px-4 py-2 text-sm outline-none focus:border-brand transition-colors"
         />
         <Button onClick={sendMessage} disabled={!content.trim()}>
           Wyślij
@@ -533,18 +537,16 @@ export default function Chat() {
 
       {/* Profil Preview Modal */}
       {isProfilePreviewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div
             className="absolute inset-0"
             onClick={() => setIsProfilePreviewModalOpen(false)}
           />
-          <div className="relative bg-white border border-neutral-200 rounded-2xl p-4 w-[75vw] max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="relative bg-neutral-900 border border-neutral-700 rounded-2xl p-4 w-[75vw] max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-neutral-900">
-                Podgląd profilu
-              </h2>
+              <h2 className="text-lg text-black">Podgląd profilu</h2>
               <button
-                className="px-4 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-sm transition-colors"
+                className="px-5 py-2 rounded-3xl bg-brand"
                 onClick={() => setIsProfilePreviewModalOpen(false)}
               >
                 Zamknij
@@ -625,30 +627,30 @@ function ContractFormModal({
   };
 
   const inputClass =
-    "w-full bg-white border border-neutral-300 rounded-xl px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-brand transition-colors";
-  const labelClass = "text-xs font-medium text-neutral-500 mb-1";
+    "w-full bg-neutral-800/30 border border-neutral-600 rounded-xl px-3 py-2 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-brand transition-colors";
+  const labelClass = "text-xs font-medium text-neutral-400 mb-1";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-fadeIn">
       <div className="absolute inset-0" onClick={onClose} />
       <form
         onSubmit={handleSubmit}
-        className="relative bg-white border border-neutral-200 rounded-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col"
+        className="relative bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col"
       >
         {/* Modal Header */}
-        <div className="p-4 border-b border-neutral-200 flex justify-between items-center sticky top-0 bg-white z-10">
+        <div className="p-4 border-b border-neutral-700 flex justify-between items-center sticky top-0 bg-neutral-900 z-10">
           <div>
-            <h3 className="font-semibold text-base text-neutral-900">
+            <h3 className="font-semibold text-base text-neutral-100">
               Uzupełnij swoje dane do umowy
             </h3>
-            <p className="text-xs text-neutral-500 mt-0.5">
+            <p className="text-xs text-neutral-400 mt-0.5">
               Dane zakresu i ceny zostaną pobrane z oferty.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-neutral-500 hover:text-neutral-800 text-sm"
+            className="text-neutral-400 hover:text-neutral-100 text-sm"
           >
             Anuluj
           </button>
@@ -657,9 +659,9 @@ function ContractFormModal({
         {/* Modal Body */}
         <div className="p-5 flex flex-col gap-5 overflow-y-auto">
           {/* PODGLĄD PARAMETRÓW Z OFERTY (Zablokowane edycyjnie, super UX!) */}
-          <div className="p-3 bg-brand/5 border border-brand/20 rounded-xl grid grid-cols-2 gap-2 text-xs">
+          <div className="p-3 bg-neutral-800/50 border border-neutral-700 rounded-xl grid grid-cols-2 gap-2 text-xs">
             <div>
-              <span className="text-neutral-500 block">
+              <span className="text-neutral-400 block">
                 Wynagrodzenie (z oferty):
               </span>
               <span className="font-bold text-brand text-sm">
@@ -668,7 +670,7 @@ function ContractFormModal({
             </div>
             <div>
               <span className="text-neutral-500 block">Zakres zlecenia:</span>
-              <span className="text-neutral-700 line-clamp-2 italic">
+              <span className="text-neutral-300 line-clamp-2 italic">
                 "{currentOffer?.description || "Brak opisu zlecenia"}"
               </span>
             </div>
@@ -677,7 +679,7 @@ function ContractFormModal({
           {/* JEŻELI ZALOGOWANY TO FACHOWIEC */}
           {isSpecialist ? (
             <div className="flex flex-col gap-4">
-              <div className="border-b border-neutral-200 pb-2">
+              <div className="border-b border-neutral-700 pb-2">
                 <span className="text-xs uppercase font-bold tracking-wider text-brand">
                   Ustawienia Umowy & Twoje dane
                 </span>
@@ -688,14 +690,14 @@ function ContractFormModal({
                 <button
                   type="button"
                   onClick={() => setContractType("UMOWA_ZLECENIE")}
-                  className={`p-3 rounded-xl border text-sm font-medium text-left ${contractType === "UMOWA_ZLECENIE" ? "bg-brand/10 border-brand text-neutral-900" : "bg-neutral-50 border-neutral-300 text-neutral-500"}`}
+                  className={`p-3 rounded-xl border text-sm font-medium text-left ${contractType === "UMOWA_ZLECENIE" ? "bg-brand/20 border-brand text-neutral-100" : "bg-neutral-800 border-neutral-600 text-neutral-400"}`}
                 >
                   Umowa zlecenie
                 </button>
                 <button
                   type="button"
                   onClick={() => setContractType("UMOWA_O_DZIELO")}
-                  className={`p-3 rounded-xl border text-sm font-medium text-left ${contractType === "UMOWA_O_DZIELO" ? "bg-brand/10 border-brand text-neutral-900" : "bg-neutral-50 border-neutral-300 text-neutral-500"}`}
+                  className={`p-3 rounded-xl border text-sm font-medium text-left ${contractType === "UMOWA_O_DZIELO" ? "bg-brand/20 border-brand text-neutral-100" : "bg-neutral-800 border-neutral-600 text-neutral-400"}`}
                 >
                   Umowa o dzieło
                 </button>
@@ -800,7 +802,7 @@ function ContractFormModal({
               </div>
 
               {/* Daty i terminy ustalane przez wykonawcę */}
-              <div className="border-t border-neutral-200 pt-3 grid grid-cols-2 gap-3">
+              <div className="border-t border-neutral-700 pt-3 grid grid-cols-2 gap-3">
                 <div className="flex flex-col">
                   <label className={labelClass}>Termin zakończenia prac</label>
                   <input
@@ -850,7 +852,7 @@ function ContractFormModal({
           ) : (
             /* JEŻELI ZALOGOWANY TO KLIENT (ORDERER) */
             <div className="flex flex-col gap-4">
-              <div className="border-b border-neutral-200 pb-2">
+              <div className="border-b border-neutral-700 pb-2">
                 <span className="text-xs uppercase font-bold tracking-wider text-brand">
                   Twoje dane jako Zleceniodawcy
                 </span>
@@ -861,14 +863,14 @@ function ContractFormModal({
                 <button
                   type="button"
                   onClick={() => setOrdererType("PERSON")}
-                  className={`flex-1 py-2 px-3 rounded-xl border text-xs font-medium ${ordererType === "PERSON" ? "bg-brand text-white border-brand" : "bg-neutral-50 border-neutral-300 text-neutral-500"}`}
+                  className={`flex-1 py-2 px-3 rounded-xl border text-xs font-medium ${ordererType === "PERSON" ? "bg-brand text-white border-brand" : "bg-neutral-800 border-neutral-600 text-neutral-400"}`}
                 >
                   Osoba prywatna
                 </button>
                 <button
                   type="button"
                   onClick={() => setOrdererType("COMPANY")}
-                  className={`flex-1 py-2 px-3 rounded-xl border text-xs font-medium ${ordererType === "COMPANY" ? "bg-brand text-white border-brand" : "bg-neutral-50 border-neutral-300 text-neutral-500"}`}
+                  className={`flex-1 py-2 px-3 rounded-xl border text-xs font-medium ${ordererType === "COMPANY" ? "bg-brand text-white border-brand" : "bg-neutral-800 border-neutral-600 text-neutral-400"}`}
                 >
                   Firma / Spółka
                 </button>
@@ -1059,7 +1061,7 @@ function ContractFormModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-neutral-200 bg-white sticky bottom-0 z-10 flex gap-2">
+        <div className="p-4 border-t border-neutral-700 bg-white sticky bottom-0 z-10 flex gap-2">
           <Button className="flex-1" type="submit">
             Zatwierdź i wyślij do umowy
           </Button>

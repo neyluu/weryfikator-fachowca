@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const DESCRIPTION_LIMIT = 500;
+
 function OfferInitiator({ onSendOffer, currentOffer }) {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -36,10 +38,17 @@ function OfferInitiator({ onSendOffer, currentOffer }) {
           <input
             type="text"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) =>
+              setDescription(e.target.value.slice(0, DESCRIPTION_LIMIT))
+            }
+            maxLength={DESCRIPTION_LIMIT}
             placeholder="Czego dotyczy oferta? (np. Montaż kabiny prysznicowej)"
             className="w-full bg-neutral-800/30 border border-neutral-600 rounded-lg px-3 py-2 text-sm outline-none focus:border-brand"
           />
+
+          <p className="text-xs text-neutral-400 text-right">
+            Pozostało: {DESCRIPTION_LIMIT - description.length}
+          </p>
 
           <div className="flex gap-2 items-center">
             <input
