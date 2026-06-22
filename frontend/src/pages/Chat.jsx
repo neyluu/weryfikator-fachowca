@@ -119,20 +119,31 @@ export default function Chat() {
     }
   }
 
-  async function sendOffer(amount) {
-    await sendSpecialMessage({ type: "OFFER", amount, status: "PENDING" });
+  async function sendOffer(amount, description) {
+    await sendSpecialMessage({
+      type: "OFFER",
+      amount,
+      description,
+      status: "PENDING",
+    });
   }
 
   async function acceptOffer() {
     await sendSpecialMessage({
       type: "OFFER",
       amount: currentOffer.amount,
+      description: currentOffer.description,
       status: "ACCEPTED",
     });
   }
 
-  async function counterOffer(amount) {
-    await sendSpecialMessage({ type: "OFFER", amount, status: "PENDING" });
+  async function counterOffer(amount, description) {
+    await sendSpecialMessage({
+      type: "OFFER",
+      amount,
+      description,
+      status: "PENDING",
+    });
   }
 
   async function sendSpecialMessage(payload) {

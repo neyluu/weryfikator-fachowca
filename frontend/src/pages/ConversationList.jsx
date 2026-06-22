@@ -42,7 +42,7 @@ export default function ConversationList() {
   }
 
   function formatLastMessage(message, currentUserId) {
-    console.log(message)
+    console.log(message);
 
     if (!message) return "";
     try {
@@ -78,7 +78,7 @@ export default function ConversationList() {
           <div
             key={c.id}
             onClick={() => navigate(`/dashboard/chat/${c.otherUserId}`)}
-            className="cursor-pointer flex gap-3 p-3 border-brand border-1 rounded-4xl"
+            className="cursor-pointer flex gap-3 p-3 border-brand border rounded-4xl"
           >
             <img
               src={

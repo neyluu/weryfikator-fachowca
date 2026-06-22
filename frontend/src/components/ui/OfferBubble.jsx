@@ -17,11 +17,18 @@ function OfferBubble({
   if (offer.status === "ACCEPTED") {
     return (
       <div className="flex justify-center my-2">
-        <div className="bg-green-800 text-green-200 px-4 py-2 rounded-2xl text-sm flex justify-between gap-3 items-center">
-          <p>
-            ✓ Zaakceptowano cenę: <strong>{offer.amount} zł</strong>
-          </p>
-          <Button className="h-5">Stwórz umowę</Button>
+        <div className="bg-green-800 text-green-200 px-4 py-2 rounded-2xl text-sm flex justify-between gap-3 items-center w-full max-w-md">
+          <div className="flex flex-col">
+            <p>
+              ✓ Zaakceptowano cenę: <strong>{offer.amount} zł</strong>
+            </p>
+            {offer.description && (
+              <p className="text-xs text-green-300/80 mt-0.5">
+                Zakres: {offer.description}
+              </p>
+            )}
+          </div>
+          <Button className="h-5 whitespace-nowrap">Stwórz umowę</Button>
         </div>
       </div>
     );
@@ -33,6 +40,13 @@ function OfferBubble({
         <p className="text-sm text-neutral-400">
           {isMine ? "Twoja propozycja" : "Propozycja ceny"}
         </p>
+
+        {offer.description && (
+          <p className="text-sm text-neutral-200 wrap-break-words">
+            <strong>Zakres:</strong> {offer.description}
+          </p>
+        )}
+
         <p className="text-2xl font-semibold">{offer.amount} zł</p>
 
         {canRespond && (
@@ -56,11 +70,12 @@ function OfferBubble({
                   value={counterAmount}
                   onChange={(e) => setCounterAmount(e.target.value)}
                   placeholder="Kwota w zł"
-                  className="flex-1 bg-neutral-800/30 border border-neutral-600 rounded-full px-3 py-1 text-sm outline-none focus:border-brand"
+                  className="flex-1 bg-neutral-800/30 border border-neutral-600 rounded-full px-3 py-1 text-sm outline-none focus:border-brand w-24"
                 />
                 <button
                   onClick={() => {
-                    if (counterAmount) onCounter(Number(counterAmount));
+                    if (counterAmount)
+                      onCounter(Number(counterAmount), offer.description);
                   }}
                   className="bg-brand rounded-full px-3 py-1 text-sm hover:brightness-90"
                 >
