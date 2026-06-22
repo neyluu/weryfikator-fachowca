@@ -33,7 +33,6 @@ export default function Chat() {
     useState(false);
   const [profileData, setProfileData] = useState({});
 
-  // NOWE STANNY DLA UMÓW
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
   const [isDownloadingContract, setIsDownloadingContract] = useState(false);
@@ -43,9 +42,10 @@ export default function Chat() {
 
   const isSpecialist = user?.role === "SPECIALIST";
   const currentOffer = extractCurrentOffer(messages, user?.userId);
-  const contractState = extractContractState(messages);
 
-  // Funkcja wyciągająca aktualną ofertę
+  // ZMIANA: Przekazujemy currentOffer do analizatora stanu umowy
+  const contractState = extractContractState(messages, currentOffer);
+
   function extractCurrentOffer(messages, userId) {
     const offerMessages = messages.filter((m) => {
       try {
@@ -61,15 +61,42 @@ export default function Chat() {
     return { ...parsed, senderId: last.senderId, messageId: last.id };
   }
 
-  // NOWE: Funkcja analizująca stan danych do umowy przesłanych na czacie
-  function extractContractState(messages) {
+  // ZMIANA: Funkcja analizuje stan danych do umowy WYŁĄCZNIE dla aktualnego cyklu (od momentu akceptacji oferty)
+  function extractContractState(messages, currentOffer) {
     let contractType = "UMOWA_ZLECENIE";
     let ordererType = "PERSON";
     let ordererData = null;
     let specialistData = null;
     let finalContract = null;
 
-    messages.forEach((m) => {
+    // Jeśli nie ma oferty lub nie została zaakceptowana, nie ma aktywnego procesu generowania umowy
+    if (!currentOffer || currentOffer.status !== "ACCEPTED") {
+      return {
+        contractType,
+        ordererType,
+        ordererData,
+        specialistData,
+        finalContract,
+      };
+    }
+
+    // Znajdujemy pozycję wiadomości z zaakceptowaną ofertą
+    const offerIndex = messages.findIndex(
+      (m) => m.id === currentOffer.messageId,
+    );
+    if (offerIndex === -1)
+      return {
+        contractType,
+        ordererType,
+        ordererData,
+        specialistData,
+        finalContract,
+      };
+
+    // Bierzemy pod uwagę tylko wiadomości, które pojawiły się PO zaakceptowaniu tej konkretnej oferty
+    const relevantMessages = messages.slice(offerIndex + 1);
+
+    relevantMessages.forEach((m) => {
       try {
         const parsed = JSON.parse(m.content);
         if (parsed.type === "CONTRACT_DATA_SUBMIT") {
@@ -193,7 +220,6 @@ export default function Chat() {
     }
   }
 
-  // NOWE: Wysłanie danych cząstkowych do umowy przez jedną ze stron
   async function handleSendContractData(roleFields) {
     await sendSpecialMessage({
       type: "CONTRACT_DATA_SUBMIT",
@@ -205,13 +231,11 @@ export default function Chat() {
     setIsContractModalOpen(false);
   }
 
-  // NOWE: Wywołanie oficjalnego API generowania umowy przez Fachowca
   async function handleGenerateFinalContract() {
     setIsGeneratingContract(true);
     try {
       const token = localStorage.getItem("token");
 
-      // Łączymy dane zebrane z czatu, oferty oraz domyślne waluty
       const fullFormPayload = {
         conversationId,
         contractType: contractState.contractType,
@@ -261,7 +285,6 @@ export default function Chat() {
 
       const data = await response.json();
 
-      // Wysyłamy informację na czat, że umowa została pomyślnie wygenerowana
       await sendSpecialMessage({
         type: "CONTRACT_FINAL",
         contractId: data.id,
@@ -274,7 +297,6 @@ export default function Chat() {
     }
   }
 
-  // NOWE: Pobieranie gotowego pliku PDF umowy
   async function handleDownloadContract(contractId) {
     setIsDownloadingContract(true);
     try {
@@ -373,19 +395,68 @@ export default function Chat() {
         )}
         {messages.map((msg, index) => {
           let offer = null;
-          let isSystemContractMsg = false;
+          let isDataSubmitMsg = false;
+          let contractFinalData = null;
+
           try {
             const parsed = JSON.parse(msg.content);
             if (parsed.type === "OFFER") offer = parsed;
-            if (
-              parsed.type === "CONTRACT_DATA_SUBMIT" ||
-              parsed.type === "CONTRACT_FINAL"
-            )
-              isSystemContractMsg = true;
+            if (parsed.type === "CONTRACT_DATA_SUBMIT") isDataSubmitMsg = true;
+
+            // ZMIANA: Wyciągamy dane finalnej umowy z wiadomości systemowej
+            if (parsed.type === "CONTRACT_FINAL") contractFinalData = parsed;
           } catch {}
 
-          // Ukrywamy techniczne wiadomości strukturalne o wpisaniu danych, by nie śmieciły czatu
-          if (isSystemContractMsg) return null;
+          // Ukrywamy wyłącznie cząstkowe struktury wpisywania danych osobowych
+          if (isDataSubmitMsg) return null;
+
+          // ZMIANA: Renderowanie wygenerowanej umowy w strumieniu czatu jako normalny bubble
+          if (contractFinalData) {
+            return (
+              <div
+                key={msg.id}
+                className="flex justify-center my-3 animate-fadeIn"
+              >
+                <div className="bg-neutral-800 border border-neutral-700 p-4 rounded-2xl flex flex-col gap-2 max-w-md w-full shadow-md">
+                  <div className="flex items-center gap-2 text-green-500">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-5 h-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    <p className="font-semibold text-sm text-neutral-100">
+                      Oficjalna umowa PDF została wygenerowana!
+                    </p>
+                  </div>
+                  <p className="text-xs text-neutral-400">
+                    Typ dokumentu:{" "}
+                    {contractFinalData.contractType === "UMOWA_O_DZIELO"
+                      ? "Umowa o dzieło"
+                      : "Umowa zlecenie"}
+                  </p>
+                  <Button
+                    onClick={() =>
+                      handleDownloadContract(contractFinalData.contractId)
+                    }
+                    disabled={isDownloadingContract}
+                  >
+                    {isDownloadingContract
+                      ? "Pobieranie..."
+                      : "Pobierz umowę PDF"}
+                  </Button>
+                </div>
+              </div>
+            );
+          }
 
           if (offer) {
             const lastOfferIndex = messages.reduce((last, m, i) => {
@@ -433,8 +504,9 @@ export default function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      {/* DEDYKOWANY PANEL MANAGERA UMOWY (UX/UI NOWOŚĆ) */}
-      {currentOffer?.status === "ACCEPTED" && (
+      {/* DEDYKOWANY PANEL MANAGERA UMOWY */}
+      {/* ZMIANA: Dodano warunek !contractState.finalContract – panel znika z dołu ekranu po wygenerowaniu pliku */}
+      {currentOffer?.status === "ACCEPTED" && !contractState.finalContract && (
         <div className="mx-4 mb-2 p-4 bg-neutral-50 border border-neutral-700 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-fadeIn">
           <div>
             <div className="flex items-center gap-2">
@@ -444,62 +516,50 @@ export default function Chat() {
               </p>
             </div>
             <p className="text-xs text-neutral-500 mt-0.5">
-              {!contractState.finalContract
-                ? "Uzupełnijcie dane, aby wygenerować oficjalną umowę PDF."
-                : "Umowa została zaakceptowana i pomyślnie wygenerowana!"}
+              Uzupełnijcie dane, aby wygenerować oficjalną umowę PDF.
             </p>
 
-            {/* Statusy kroków */}
-            {!contractState.finalContract && (
-              <div className="flex gap-4 mt-2 text-xs">
-                <span
-                  className={
-                    contractState.specialistData
-                      ? "text-green-600"
-                      : "text-neutral-400"
-                  }
-                >
-                  ● Fachowiec:{" "}
-                  {contractState.specialistData
-                    ? "Dane wpisane"
-                    : "Oczekiwanie"}
-                </span>
-                <span
-                  className={
-                    contractState.ordererData
-                      ? "text-green-600"
-                      : "text-neutral-400"
-                  }
-                >
-                  ● Zleceniodawca:{" "}
-                  {contractState.ordererData ? "Dane wpisane" : "Oczekiwanie"}
-                </span>
-              </div>
-            )}
+            <div className="flex gap-4 mt-2 text-xs">
+              <span
+                className={
+                  contractState.specialistData
+                    ? "text-green-600"
+                    : "text-neutral-400"
+                }
+              >
+                ● Fachowiec:{" "}
+                {contractState.specialistData ? "Dane wpisane" : "Oczekiwanie"}
+              </span>
+              <span
+                className={
+                  contractState.ordererData
+                    ? "text-green-600"
+                    : "text-neutral-400"
+                }
+              >
+                ● Zleceniodawca:{" "}
+                {contractState.ordererData ? "Dane wpisane" : "Oczekiwanie"}
+              </span>
+            </div>
           </div>
 
           <div className="flex gap-2 shrink-0">
-            {/* Przycisk uzupełniania danych dla zalogowanej strony */}
-            {!contractState.finalContract && (
-              <Button
-                look="secondary"
-                onClick={() => setIsContractModalOpen(true)}
-              >
-                {(
-                  isSpecialist
-                    ? contractState.specialistData
-                    : contractState.ordererData
-                )
-                  ? "Edytuj swoje dane"
-                  : "Wpisz dane do umowy"}
-              </Button>
-            )}
+            <Button
+              look="secondary"
+              onClick={() => setIsContractModalOpen(true)}
+            >
+              {(
+                isSpecialist
+                  ? contractState.specialistData
+                  : contractState.ordererData
+              )
+                ? "Edytuj swoje dane"
+                : "Wpisz dane do umowy"}
+            </Button>
 
-            {/* Fachowiec widzi przycisk generowania, gdy obie strony wpiszą dane */}
             {isSpecialist &&
               contractState.specialistData &&
-              contractState.ordererData &&
-              !contractState.finalContract && (
+              contractState.ordererData && (
                 <Button
                   onClick={handleGenerateFinalContract}
                   disabled={isGeneratingContract}
@@ -507,26 +567,13 @@ export default function Chat() {
                   {isGeneratingContract ? "Generowanie..." : "Generuj umowę"}
                 </Button>
               )}
-
-            {/* Pobieranie gotowego dokumentu */}
-            {contractState.finalContract && (
-              <Button
-                onClick={() =>
-                  handleDownloadContract(contractState.finalContract.contractId)
-                }
-                disabled={isDownloadingContract}
-              >
-                {isDownloadingContract ? "Pobieranie..." : "Pobierz umowę"}
-              </Button>
-            )}
           </div>
         </div>
       )}
 
       {/* Aktywne bloki wpisywania wiadomości / inicjowania ofert */}
-      {/* POPRAWKA: obie strony (klient i fachowiec) mogą teraz zaproponować ofertę,
-          a nie tylko fachowiec jak poprzednio */}
-      {currentOffer?.status !== "ACCEPTED" && (
+      {/* ZMIANA: Komponent propozycji nowej oferty pojawia się ponownie, jeśli obecna oferta ma już wygenerowaną umowę PDF */}
+      {(currentOffer?.status !== "ACCEPTED" || contractState.finalContract) && (
         <OfferInitiator onSendOffer={sendOffer} currentOffer={currentOffer} />
       )}
 
@@ -543,9 +590,7 @@ export default function Chat() {
         </Button>
       </div>
 
-      {/* ================================================================= */}
-      {/* NOWY MODAL: FORMULARZ DANYCH UMOWY (UX/UI PROSTE I ZOPTYMALIZOWANE) */}
-      {/* ================================================================= */}
+      {/* MODAL FORMULARZA DANYCH UMOWY */}
       {isContractModalOpen && (
         <ContractFormModal
           isSpecialist={isSpecialist}
@@ -589,9 +634,6 @@ export default function Chat() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// SUB-KOMPONENT MODALA (Piękne, dedykowane UI dopasowane do roli)
-// ---------------------------------------------------------------------------
 function ContractFormModal({
   isSpecialist,
   currentOffer,
@@ -602,18 +644,15 @@ function ContractFormModal({
   const [contractType, setContractType] = useState(savedState.contractType);
   const [ordererType, setOrdererType] = useState(savedState.ordererType);
 
-  // Inicjalizacja stanów formularza na bazie tego co już wpisano lub pustych pól
   const [fields, setFields] = useState({
     contractType: savedState.contractType,
     ordererType: savedState.ordererType,
-    // Pola klienta (Person)
     ordererFullName: savedState.ordererData?.ordererFullName ?? "",
     ordererPesel: savedState.ordererData?.ordererPesel ?? "",
     ordererIdNumber: savedState.ordererData?.ordererIdNumber ?? "",
     ordererAddress: savedState.ordererData?.ordererAddress ?? "",
     ordererCity: savedState.ordererData?.ordererCity ?? "",
     ordererPostalCode: savedState.ordererData?.ordererPostalCode ?? "",
-    // Pola klienta (Company)
     ordererCompanyName: savedState.ordererData?.ordererCompanyName ?? "",
     ordererNip: savedState.ordererData?.ordererNip ?? "",
     ordererRegon: savedState.ordererData?.ordererRegon ?? "",
@@ -622,7 +661,6 @@ function ContractFormModal({
       savedState.ordererData?.ordererRepresentativeName ?? "",
     ordererRepresentativeTitle:
       savedState.ordererData?.ordererRepresentativeTitle ?? "",
-    // Pola Fachowca
     specialistFullName: savedState.specialistData?.specialistFullName ?? "",
     specialistPesel: savedState.specialistData?.specialistPesel ?? "",
     specialistIdNumber: savedState.specialistData?.specialistIdNumber ?? "",
@@ -631,7 +669,6 @@ function ContractFormModal({
     specialistPostalCode: savedState.specialistData?.specialistPostalCode ?? "",
     specialistEmail: savedState.specialistData?.specialistEmail ?? "",
     specialistPhone: savedState.specialistData?.specialistPhone ?? "",
-    // Ogólne szczegóły
     completionDeadline: savedState.specialistData?.completionDeadline ?? "",
     paymentDeadline: savedState.specialistData?.paymentDeadline ?? "",
     contractPlace: savedState.specialistData?.contractPlace ?? "",
@@ -658,7 +695,6 @@ function ContractFormModal({
         onSubmit={handleSubmit}
         className="relative bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col"
       >
-        {/* Modal Header */}
         <div className="p-4 border-b border-neutral-700 flex justify-between items-center sticky top-0 bg-neutral-900 z-10">
           <div>
             <h3 className="font-semibold text-base text-neutral-100">
@@ -677,9 +713,7 @@ function ContractFormModal({
           </button>
         </div>
 
-        {/* Modal Body */}
         <div className="p-5 flex flex-col gap-5 overflow-y-auto">
-          {/* PODGLĄD PARAMETRÓW Z OFERTY (Zablokowane edycyjnie, super UX!) */}
           <div className="p-3 bg-neutral-800/50 border border-neutral-700 rounded-xl grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="text-neutral-400 block">
@@ -697,7 +731,6 @@ function ContractFormModal({
             </div>
           </div>
 
-          {/* JEŻELI ZALOGOWANY TO FACHOWIEC */}
           {isSpecialist ? (
             <div className="flex flex-col gap-4">
               <div className="border-b border-neutral-700 pb-2">
@@ -706,7 +739,6 @@ function ContractFormModal({
                 </span>
               </div>
 
-              {/* Wybór typu umowy (Tylko fachowiec decyduje) */}
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -724,7 +756,6 @@ function ContractFormModal({
                 </button>
               </div>
 
-              {/* Pola osobowe fachowca */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col col-span-2">
                   <label className={labelClass}>
@@ -822,7 +853,6 @@ function ContractFormModal({
                 </div>
               </div>
 
-              {/* Daty i terminy ustalane przez wykonawcę */}
               <div className="border-t border-neutral-700 pt-3 grid grid-cols-2 gap-3">
                 <div className="flex flex-col">
                   <label className={labelClass}>Termin zakończenia prac</label>
@@ -871,7 +901,6 @@ function ContractFormModal({
               </div>
             </div>
           ) : (
-            /* JEŻELI ZALOGOWANY TO KLIENT (ORDERER) */
             <div className="flex flex-col gap-4">
               <div className="border-b border-neutral-700 pb-2">
                 <span className="text-xs uppercase font-bold tracking-wider text-brand">
@@ -879,7 +908,6 @@ function ContractFormModal({
                 </span>
               </div>
 
-              {/* Wybór podmiotu */}
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -1081,7 +1109,6 @@ function ContractFormModal({
           )}
         </div>
 
-        {/* Modal Footer */}
         <div className="p-4 border-t border-neutral-700 bg-white sticky bottom-0 z-10 flex gap-2">
           <Button className="flex-1" type="submit">
             Zatwierdź i wyślij do umowy
