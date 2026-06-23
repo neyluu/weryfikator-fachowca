@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import LocationInput from "../components/ui/LocationInput";
@@ -38,6 +38,30 @@ export default function Home() {
   usePageTitle("Weryfikator Fachowca");
   const [city, setCity] = useState(null);
   const [service, setService] = useState("");
+
+  const [newestSpecialists, setNewestSpecialists] = useState([]);
+  const [loadingNewest, setLoadingNewest] = useState(true);
+  const [errorNewest, setErrorNewest] = useState(null);
+
+  useEffect(() => {
+    setLoadingNewest(true);
+    setErrorNewest(null);
+
+    fetch("/api/profile/newest?limit=3")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        setNewestSpecialists(data);
+        setLoadingNewest(false);
+      })
+      .catch((err) => {
+        console.error("Błąd pobierania nowych fachowców:", err);
+        setErrorNewest("Nie udało się pobrać nowych fachowców.");
+        setLoadingNewest(false);
+      });
+  }, []);
 
   const searchHref =
     city || service
@@ -194,80 +218,64 @@ export default function Home() {
 
       {/* NOWI FACHOWCY */}
       <Section title="Nowi fachowcy">
-        <div className="flex flex-row gap-3 flex-wrap">
-          <Card className="flex-1 min-w-[250px] flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <Avatar name="JK" />
-              <div className="flex flex-col">
-                <span className="text-neutral-200 font-medium">
-                  Jan Kowalski
-                </span>
-                <span className="text-neutral-500 text-xs">Elektryk</span>
-              </div>
-            </div>
+        {loadingNewest && (
+          <div className="flex justify-center py-10">
+            <span className="text-neutral-500">Ładowanie…</span>
+          </div>
+        )}
 
-            <p className="text-neutral-400 text-sm">
-              Specjalizuję się w instalacjach elektrycznych w domach i
-              mieszkaniach. 8 lat doświadczenia.
-            </p>
+        {!loadingNewest && errorNewest && (
+          <div className="flex justify-center py-10">
+            <span className="text-red-400">{errorNewest}</span>
+          </div>
+        )}
 
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-neutral-500">Warszawa</span>
-              <span className="text-xs text-neutral-500">
-                8 lat doświadczenia
-              </span>
-            </div>
-          </Card>
+        {!loadingNewest && !errorNewest && newestSpecialists.length === 0 && (
+          <div className="flex justify-center py-10">
+            <span className="text-neutral-500">
+              Brak nowych fachowców do wyświetlenia.
+            </span>
+          </div>
+        )}
 
-          <Card className="flex-1 min-w-[250px] flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <Avatar name="AM" />
-              <div className="flex flex-col">
-                <span className="text-neutral-200 font-medium">
-                  Anna Malinowska
-                </span>
-                <span className="text-neutral-500 text-xs">
-                  Projektantka wnętrz
-                </span>
-              </div>
-            </div>
+        {!loadingNewest && !errorNewest && newestSpecialists.length > 0 && (
+          <div className="flex flex-row gap-3 flex-wrap">
+            {newestSpecialists.map((specialist) => {
+              const initials = `${specialist.firstName?.[0] ?? "?"}${
+                specialist.lastName?.[0] ?? ""
+              }`;
+              const location =
+                specialist.localization?.n || specialist.city || "";
 
-            <p className="text-neutral-400 text-sm">
-              Tworzę funkcjonalne i estetyczne projekty mieszkań oraz lokali
-              usługowych.
-            </p>
+              return (
+                <Card
+                  key={specialist.id}
+                  className="flex-1 min-w-[250px] flex flex-col gap-4"
+                >
+                  <div className="flex items-center gap-2">
+                    <Avatar name={initials} />
+                    <div className="flex flex-col">
+                      <span className="text-neutral-200 font-medium">
+                        {specialist.firstName} {specialist.lastName}
+                      </span>
+                      <span className="text-neutral-500 text-xs">
+                        {specialist.specialization}
+                      </span>
+                    </div>
+                  </div>
 
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-neutral-500">Kraków</span>
-              <span className="text-xs text-neutral-500">
-                5 lat doświadczenia
-              </span>
-            </div>
-          </Card>
+                  <p className="text-neutral-400 text-sm">
+                    {specialist.description}
+                  </p>
 
-          <Card className="flex-1 min-w-[250px] flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <Avatar name="PS" />
-              <div className="flex flex-col">
-                <span className="text-neutral-200 font-medium">
-                  Piotr Szymański
-                </span>
-                <span className="text-neutral-500 text-xs">Hydraulik</span>
-              </div>
-            </div>
-
-            <p className="text-neutral-400 text-sm">
-              Szybkie naprawy i instalacje wodno-kanalizacyjne. Dostępność 24/7.
-            </p>
-
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-neutral-500">Łódź</span>
-              <span className="text-xs text-neutral-500">
-                12 lat doświadczenia
-              </span>
-            </div>
-          </Card>
-        </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-neutral-500">{location}</span>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </Section>
     </div>
   );
