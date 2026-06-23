@@ -62,6 +62,12 @@ export default function ConversationList() {
       if (parsed.type === "CONTRACT_FINAL") {
         return "📄 Wygenerowano oficjalną umowę PDF";
       }
+
+      if (parsed.type === "IMAGE") {
+        return message.senderId === currentUserId
+          ? `Ty: Wysłano ${parsed.images.length} zdjęć`
+          : `Otrzymano ${parsed.images.length} zdjęcia`;
+      }
     } catch {}
 
     // Normalna wiadomość tekstowa
