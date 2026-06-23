@@ -5,6 +5,8 @@ import Button from "../components/ui/Button.jsx";
 import OfferInitiator from "../components/ui/OfferInitiator.jsx";
 import OfferBubble from "../components/ui/OfferBubble.jsx";
 import ProfileCard from "../components/ui/ProfileCard.jsx";
+import AuthImage from "../components/ui/AuthImage.jsx";
+import ImageLightbox from "../components/ui/ImageLightbox.jsx";
 
 function apiFetch(path, options = {}) {
   const token = localStorage.getItem("token");
@@ -24,6 +26,8 @@ export default function Chat() {
 
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
+  const [selectedImages, setSelectedImages] = useState([]);
+  const fileInputRef = useRef(null);
   const [conversationId, setConversationId] = useState(null);
   const [conversation, setConversation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +35,7 @@ export default function Chat() {
   const [isProfilePreviewModalOpen, setIsProfilePreviewModalOpen] =
     useState(false);
   const [profileData, setProfileData] = useState({});
+  const [lightbox, setLightbox] = useState(null);
 
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
@@ -355,6 +360,56 @@ export default function Chat() {
     setIsProfilePreviewModalOpen(true);
   }
 
+  function handleImageSelect(e) {
+    const files = Array.from(e.target.files);
+
+    setSelectedImages((prev) => {
+      const merged = [...prev, ...files];
+
+      if (merged.length > 4) {
+        setError("Maksymalnie 4 zdjęcia");
+        return prev;
+      }
+
+      return merged;
+    });
+  }
+
+  async function sendImages() {
+    if (!selectedImages.length) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const formData = new FormData();
+
+      selectedImages.forEach((file) => {
+        formData.append("images", file);
+      });
+
+      const uploadRes = await fetch("/api/chat/images", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!uploadRes.ok) throw new Error();
+
+      const uploaded = await uploadRes.json();
+
+      await sendSpecialMessage({
+        type: "IMAGE",
+        images: uploaded,
+      });
+
+      setSelectedImages([]);
+    } catch {
+      setError("Nie udało się wysłać zdjęć.");
+    }
+  }
+
   const isMine = (msg) => msg.senderId === user.userId;
 
   return (
@@ -429,6 +484,72 @@ export default function Chat() {
 
           try {
             const parsed = JSON.parse(msg.content);
+
+            if (parsed?.type === "IMAGE") {
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col gap-1 ${isMine(msg) ? "items-end" : "items-start"}`}
+                >
+                  <div
+                    className={`grid gap-1.5 max-w-[70%] p-1.5 rounded-3xl
+                      ${isMine(msg) ? "bg-brand rounded-br-sm" : "bg-neutral-800 rounded-bl-sm"}
+                      ${parsed.images.length === 1 ? "grid-cols-1" : "grid-cols-2"}
+                    `}
+                  >
+                    {parsed.images.map((img, imgIndex) => (
+                      <div
+                        key={img.id}
+                        className="relative group cursor-zoom-in"
+                        onClick={() =>
+                          setLightbox({
+                            images: parsed.images,
+                            index: imgIndex,
+                          })
+                        }
+                      >
+                        <AuthImage
+                          url={`/api${img.url}`}
+                          className={`rounded-2xl object-cover w-full h-48 ${
+                            parsed.images.length === 1
+                              ? isMine(msg)
+                                ? "rounded-br-sm"
+                                : "rounded-bl-sm"
+                              : ""
+                          }`}
+                        />
+                        <div className="absolute inset-0 rounded-2xl bg-black/0 group-hover:bg-black/20 transition-colors flex items-end justify-end p-2">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-1">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-4 h-4 text-white"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0zm0 0l2 2"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8 11h6M11 8v6"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <small className="text-neutral-500 text-xs px-1">
+                    {new Date(msg.sentAt).toLocaleTimeString()}
+                  </small>
+                </div>
+              );
+            }
             if (parsed.type === "OFFER") offer = parsed;
             if (parsed.type === "CONTRACT_DATA_SUBMIT") isDataSubmitMsg = true;
 
@@ -606,7 +727,50 @@ export default function Chat() {
         <OfferInitiator onSendOffer={sendOffer} currentOffer={currentOffer} />
       )}
 
+      {selectedImages.length > 0 && (
+        <div className="px-4 py-2 flex gap-2 overflow-x-auto items-center">
+          {selectedImages.map((file, idx) => (
+            <div key={idx} className="relative shrink-0 group">
+              <img
+                src={URL.createObjectURL(file)}
+                alt=""
+                className="w-20 h-20 rounded-xl object-cover"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedImages((prev) => prev.filter((_, i) => i !== idx))
+                }
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-neutral-900 border
+                border-neutral-600 text-neutral-300 hover:text-white hover:bg-red-500 hover:border-red-500 flex items-center
+                justify-center text-xs leading-none transition-colors opacity-0 group-hover:opacity-100"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+
+          <Button onClick={sendImages}>Wyślij ({selectedImages.length})</Button>
+        </div>
+      )}
       <div className="p-4 border-t border-neutral-700 flex gap-3 items-center">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleImageSelect}
+        />
+
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="w-10 h-10 rounded-full bg-neutral-800/30 flex items-center justify-center border border-neutral-600 hover:bg-neutral-800/80"
+        >
+          +
+        </button>
+
         <input
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -658,6 +822,14 @@ export default function Chat() {
             />
           </div>
         </div>
+      )}
+
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          startIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
       )}
     </div>
   );

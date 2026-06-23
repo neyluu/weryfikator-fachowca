@@ -8,7 +8,9 @@ import org.example.backend.dto.request.profile.LocalizationDto;
 import org.example.backend.dto.response.chat.ConversationDto;
 import org.example.backend.dto.response.chat.MessageDto;
 import org.example.backend.dto.response.chat.PagedMessagesDto;
+import org.example.backend.dto.response.chat.UploadedImageDto;
 import org.example.backend.entity.*;
+import org.example.backend.repository.ChatImageRepository;
 import org.example.backend.repository.ProfileRepository;
 import org.example.backend.repository.UserRepository;
 import org.example.backend.service.ChatService;
@@ -17,7 +19,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +32,7 @@ public class ChatController {
     private final ChatService chatService;
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
+    private final ChatImageRepository imageRepository;
 
     @PostMapping("/messages")
     public ResponseEntity<MessageDto> sendMessage(
@@ -72,6 +77,32 @@ public class ChatController {
             result.getTotalElements(),
             result.hasNext()
         );
+    }
+
+    @PostMapping("/images")
+    public List<UploadedImageDto> uploadImages(
+            @RequestParam("images") List<MultipartFile> images
+    ) throws IOException {
+
+        if (images.size() > 4) {
+            throw new RuntimeException("Max 4 images");
+        }
+
+        return chatService.uploadImages(images);
+    }
+
+    @GetMapping("/images/{id}")
+    public ResponseEntity<byte[]> getImage(
+            @PathVariable Long id
+    ) {
+
+        ChatImage image = imageRepository
+                .findById(id)
+                .orElseThrow();
+
+        return ResponseEntity.ok()
+                .header("Content-Type", image.getContentType())
+                .body(image.getData());
     }
 
     private MessageDto toMessageDTO(Message m) {
