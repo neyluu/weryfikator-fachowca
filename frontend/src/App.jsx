@@ -19,7 +19,6 @@ import { AuthProvider } from "./context/AuthContext";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
 import SearchResults from "./pages/SearchResults";
-import ContractTestPage from "./pages/ContractTestPage.jsx";
 import Chat from "./pages/Chat.jsx";
 import ConversationList from "./pages/ConversationList.jsx";
 import SpecialistProfile from "./pages/SpecialistProfile";
@@ -62,7 +61,6 @@ function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
 
-              <Route path="contracts" element={<ContractTestPage />} />
               <Route path="chat" element={<ConversationList />} />
               <Route path="chat/:professionalId" element={<Chat />} />
             </Route>
