@@ -1,6 +1,7 @@
 package org.example.backend.service;
 
 import jakarta.transaction.Transactional;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.entity.Conversation;
 import org.example.backend.entity.Message;
@@ -10,8 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @Transactional
@@ -36,20 +35,22 @@ public class ChatService {
 
     public Page<Message> getMessages(Long conversationId, int page, int size) {
         return messageRepo.findByConversationId(
-                conversationId,
-                PageRequest.of(page, size, Sort.by("sentAt").descending())
+            conversationId,
+            PageRequest.of(page, size, Sort.by("sentAt").descending())
         );
     }
 
     private Conversation getOrCreate(Long senderId, Long receiverId) {
         long u1 = Math.min(senderId, receiverId);
         long u2 = Math.max(senderId, receiverId);
-        return conversationRepo.findByUser1IdAndUser2Id(u1, u2)
-                .orElseGet(() -> {
-                    Conversation c = new Conversation();
-                    c.setUser1Id(u1);
-                    c.setUser2Id(u2);
-                    return conversationRepo.save(c);
-                });
+        return conversationRepo
+            .findByUser1IdAndUser2Id(u1, u2)
+            .orElseGet(() -> {
+                Conversation c = new Conversation();
+                c.setUser1Id(u1);
+                c.setUser2Id(u2);
+                c.setSpecialistUserId(receiverId);
+                return conversationRepo.save(c);
+            });
     }
 }

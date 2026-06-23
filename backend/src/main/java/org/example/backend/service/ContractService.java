@@ -43,24 +43,45 @@ public class ContractService {
                 )
             );
 
+        boolean currentUserIsUser1 = conversation
+            .getUser1Id()
+            .equals(currentUser.getId().longValue());
+        boolean currentUserIsUser2 = conversation
+            .getUser2Id()
+            .equals(currentUser.getId().longValue());
+
+        if (!currentUserIsUser1 && !currentUserIsUser2) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "Nie jesteś uczestnikiem tej rozmowy"
+            );
+        }
+
         User user1 = userRepository
             .findById(conversation.getUser1Id())
             .orElseThrow();
-
         User user2 = userRepository
             .findById(conversation.getUser2Id())
             .orElseThrow();
 
-        User clientUser;
-        User specialistUser;
-
-        if ("SPECIALIST".equals(user1.getRole().name())) {
-            specialistUser = user1;
-            clientUser = user2;
-        } else {
-            specialistUser = user2;
-            clientUser = user1;
+        Long specialistUserId = conversation.getSpecialistUserId();
+        if (specialistUserId == null) {
+            specialistUserId = "SPECIALIST".equals(user1.getRole().name())
+                ? user1.getId().longValue()
+                : user2.getId().longValue();
         }
+
+        if (!specialistUserId.equals(currentUser.getId().longValue())) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "Tylko fachowiec w tej rozmowie może wygenerować umowę"
+            );
+        }
+
+        User specialistUser = currentUser;
+        User clientUser = specialistUserId.equals(user1.getId().longValue())
+            ? user2
+            : user1;
 
         GeneratedContract contract = new GeneratedContract();
         contract.setContractType(contractType);

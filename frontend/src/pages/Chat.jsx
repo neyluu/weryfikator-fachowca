@@ -40,7 +40,9 @@ export default function Chat() {
   const bottomRef = useRef(null);
   const navigate = useNavigate();
 
-  const isSpecialist = user?.role === "SPECIALIST";
+  const isSpecialist = conversation
+    ? conversation.specialistUserId === user?.userId
+    : false;
   const currentOffer = extractCurrentOffer(messages, user?.userId);
 
   // ZMIANA: Przekazujemy currentOffer do analizatora stanu umowy
@@ -719,7 +721,7 @@ function ContractFormModal({
               <span className="text-neutral-400 block">
                 Wynagrodzenie (z oferty):
               </span>
-              <span className="font-bold text-brand text-sm">
+              <span className="font-bold text-neutral-300 text-sm">
                 {currentOffer?.amount} PLN
               </span>
             </div>
@@ -734,8 +736,8 @@ function ContractFormModal({
           {isSpecialist ? (
             <div className="flex flex-col gap-4">
               <div className="border-b border-neutral-700 pb-2">
-                <span className="text-xs uppercase font-bold tracking-wider text-brand">
-                  Ustawienia Umowy & Twoje dane
+                <span className="text-xs uppercase font-bold tracking-wider text-neutral-600">
+                  Ustawienia Umowy i Twoje dane
                 </span>
               </div>
 
@@ -795,9 +797,10 @@ function ContractFormModal({
                 </div>
                 <div className="flex flex-col col-span-2">
                   <label className={labelClass}>
-                    Adres zamieszkania / Siedziby
+                    Adres zamieszkania / Siedziby *
                   </label>
                   <input
+                    required
                     className={inputClass}
                     value={fields.specialistAddress}
                     onChange={(e) =>
@@ -903,7 +906,7 @@ function ContractFormModal({
           ) : (
             <div className="flex flex-col gap-4">
               <div className="border-b border-neutral-700 pb-2">
-                <span className="text-xs uppercase font-bold tracking-wider text-brand">
+                <span className="text-xs uppercase font-bold tracking-wider text-neutral-600">
                   Twoje dane jako Zleceniodawcy
                 </span>
               </div>
