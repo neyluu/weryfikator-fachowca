@@ -10,7 +10,6 @@ import TextArea from "../components/ui/TextArea";
 import { useAuth } from "../context/AuthContext";
 import usePageTitle from "../util/pageTitle";
 import { Star } from "lucide-react";
-import ContactMeCard from "../components/ui/ContactMeCard.jsx";
 
 const formatDate = (dateInput) => {
   if (!dateInput) return "";
@@ -184,6 +183,8 @@ export default function SpecialistProfile() {
           profile: profileData.profile || profileData,
           user: profileData.user || profileData,
         }}
+        contactButton={true}
+        id={id}
       />
 
       <Section title="Opinie użytkowników">
@@ -295,21 +296,6 @@ export default function SpecialistProfile() {
           <div className="mt-6 p-6 text-center border border-neutral-800 rounded-3xl bg-neutral-900/50 flex flex-col items-center gap-3">
             <p className="text-neutral-400">
               Zaloguj się, aby podzielić się swoją opinią o tym fachowcu.
-            </p>
-            <Button href="/auth/login" look="secondary">
-              Zaloguj się
-            </Button>
-          </div>
-        )}
-      </Section>
-
-      <Section title="Kontakt">
-        {user ? (
-          <ContactMeCard professionalId={id} />
-        ) : (
-          <div className="mt-6 p-6 text-center border border-neutral-800 rounded-3xl bg-neutral-900/50 flex flex-col items-center gap-3">
-            <p className="text-neutral-400">
-              Zaloguj się aby skontaktować się z fachowcem.
             </p>
             <Button href="/auth/login" look="secondary">
               Zaloguj się
