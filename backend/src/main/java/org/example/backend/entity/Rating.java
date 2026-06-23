@@ -23,7 +23,13 @@ public class Rating {
     private Long authorId;
 
     @Column(nullable = false)
-    private Integer score;
+    private Integer quality;
+
+    @Column(nullable = false)
+    private Integer price;
+
+    @Column(nullable = false)
+    private Integer timeliness;
 
     @Column(length = 1000)
     private String comment;

@@ -7,6 +7,8 @@ import lombok.Setter;
 @Setter
 public class RatingRequest {
     private Long specialistId;
-    private Integer score;
+    private Integer quality;
+    private Integer price;
+    private Integer timeliness;
     private String comment;
 }

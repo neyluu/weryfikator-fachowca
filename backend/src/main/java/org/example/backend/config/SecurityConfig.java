@@ -25,32 +25,35 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-            .sessionManagement(s ->
-                s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .authorizeHttpRequests(auth ->
-                auth
-                    .requestMatchers(
-                        "/swagger",
-                        "/swagger/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/v3/api-docs/**"
-                    )
-                    .permitAll()
-                    .requestMatchers("/auth/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/profile/search").permitAll()
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                    .requestMatchers("/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/specialist/**").hasAnyRole("ADMIN", "SPECIALIST")
-                    .requestMatchers("/chat/**").authenticated()
-                    .requestMatchers("/profile/**").authenticated()
-                    .anyRequest().authenticated()
-            )
-            .addFilterBefore(
-                new JwtAuthFilter(jwtUtil),
-                UsernamePasswordAuthenticationFilter.class
-            );
+                .sessionManagement(s ->
+                        s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(auth ->
+                        auth
+                                .requestMatchers(
+                                        "/swagger",
+                                        "/swagger/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/v3/api-docs/**"
+                                )
+                                .permitAll()
+                                .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/profile/search").permitAll()
+                                .requestMatchers("/profile/me").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/profile/{id}").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/ratings/specialist/**").permitAll()
+                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/specialist/**").hasAnyRole("ADMIN", "SPECIALIST")
+                                .requestMatchers("/chat/**").authenticated()
+                                .requestMatchers("/profile/**").authenticated()
+                                .anyRequest().authenticated()
+                )
+                .addFilterBefore(
+                        new JwtAuthFilter(jwtUtil),
+                        UsernamePasswordAuthenticationFilter.class
+                );
         return http.build();
     }
 

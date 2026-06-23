@@ -4,25 +4,25 @@ import Select from "../components/ui/Select";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Avatar from "../components/ui/Avatar";
-import Stars from "../components/ui/Stars";
 import usePageTitle from "../util/pageTitle";
+import { Star } from "lucide-react";
 
 const SORT_OPTIONS = [
     { value: "rating-desc", label: "Najwyżej oceniane" },
-    { value: "price-asc",   label: "Cena: od najniższej" },
-    { value: "price-desc",  label: "Cena: od najwyższej" },
+    { value: "price-asc", label: "Cena: od najniższej" },
+    { value: "price-desc", label: "Cena: od najwyższej" },
 ];
 
 const getSortPrice = (prices) => {
-    if (prices?.hourly?.enabled)       return prices.hourly.value.min;
-    if (prices?.project?.enabled)      return prices.project.value.min;
+    if (prices?.hourly?.enabled) return prices.hourly.value.min;
+    if (prices?.project?.enabled) return prices.project.value.min;
     if (prices?.consultation?.enabled) return prices.consultation.value.min;
     return 0;
 };
 
 const getPriceLabel = (prices) => {
-    if (prices?.hourly?.enabled)       return `od ${prices.hourly.value.min} zł / h`;
-    if (prices?.project?.enabled)      return `Wycena od ${prices.project.value.min} zł`;
+    if (prices?.hourly?.enabled) return `od ${prices.hourly.value.min} zł / h`;
+    if (prices?.project?.enabled) return `Wycena od ${prices.project.value.min} zł`;
     if (prices?.consultation?.enabled) return `Konsultacja: ${prices.consultation.value.min} zł`;
     return "Do ustalenia";
 };
@@ -31,18 +31,18 @@ export default function SearchResults() {
     usePageTitle("Wyniki wyszukiwania - Weryfikator Fachowca");
 
     const [searchParams] = useSearchParams();
-    const [sortOption, setSortOption]   = useState("rating-desc");
-    const [results, setResults]         = useState([]);
-    const [loading, setLoading]         = useState(true);
-    const [error, setError]             = useState(null);
+    const [sortOption, setSortOption] = useState("rating-desc");
+    const [results, setResults] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const cityQuery    = searchParams.get("city")    || "";
+    const cityQuery = searchParams.get("city") || "";
     const serviceQuery = searchParams.get("service") || "";
 
     useEffect(() => {
         const params = new URLSearchParams();
         if (serviceQuery) params.set("service", serviceQuery);
-        if (cityQuery)    params.set("city",    cityQuery);
+        if (cityQuery) params.set("city", cityQuery);
 
         setLoading(true);
         setError(null);
@@ -66,7 +66,7 @@ export default function SearchResults() {
     const sortedResults = useMemo(() => {
         const copy = [...results];
         if (sortOption === "rating-desc") {
-            copy.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+            copy.sort((a, b) => (b.averageScore || 0) - (a.averageScore || 0));
         } else if (sortOption === "price-asc") {
             copy.sort((a, b) => getSortPrice(a.prices) - getSortPrice(b.prices));
         } else if (sortOption === "price-desc") {
@@ -75,7 +75,7 @@ export default function SearchResults() {
         return copy;
     }, [results, sortOption]);
 
-    const titleText    = [serviceQuery, cityQuery].filter(Boolean).join(" w ");
+    const titleText = [serviceQuery, cityQuery].filter(Boolean).join(" w ");
     const displayTitle = titleText ? `Wyniki dla: ${titleText}` : "Wszyscy specjaliści";
 
     return (
@@ -103,85 +103,92 @@ export default function SearchResults() {
                 </div>
             </div>
 
-            {/* Stan ładowania */}
             {loading && (
                 <div className="flex justify-center py-20">
                     <span className="text-neutral-500">Ładowanie wyników…</span>
                 </div>
             )}
 
-            {/* Błąd */}
             {!loading && error && (
                 <div className="flex justify-center py-20">
                     <span className="text-red-400">{error}</span>
                 </div>
             )}
 
-            {/* Brak wyników */}
             {!loading && !error && sortedResults.length === 0 && (
                 <div className="flex justify-center py-20">
-                    <span className="text-neutral-500">
-                        Nie znaleziono fachowców spełniających kryteria.
-                    </span>
+          <span className="text-neutral-500">
+            Nie znaleziono fachowców spełniających kryteria.
+          </span>
                 </div>
             )}
 
-            {/* Lista wyników */}
             {!loading && !error && sortedResults.length > 0 && (
                 <div className="flex flex-col gap-4">
-                    {sortedResults.map((specialist) => (
-                        <Card
-                            key={specialist.id}
-                            className="flex flex-col sm:flex-row gap-6 justify-between items-start"
-                        >
-                            <div className="flex flex-row gap-4 items-start flex-1">
-                                <Avatar
-                                    name={`${specialist.firstName?.[0] ?? "?"}${specialist.lastName?.[0] ?? ""}`}
-                                />
+                    {sortedResults.map((specialist) => {
+                        const rawScore = specialist.averageScore || 0;
+                        const location = specialist.localization?.n || specialist.city;
 
-                                <div className="flex flex-col gap-2">
-                                    <div className="flex flex-wrap items-center gap-3">
-                                        <span className="text-xl font-medium text-neutral-200">
-                                            {specialist.firstName} {specialist.lastName}
-                                        </span>
-                                        {specialist.rating != null && (
-                                            <Stars value={specialist.rating} interactive={false} />
-                                        )}
+                        return (
+                            <Card
+                                key={specialist.id}
+                                className="flex flex-col sm:flex-row gap-6 justify-between items-start"
+                            >
+                                <div className="flex flex-row gap-4 items-start flex-1">
+                                    <Avatar
+                                        name={`${specialist.firstName?.[0] ?? "?"}${specialist.lastName?.[0] ?? ""}`}
+                                    />
+
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-xl font-medium text-neutral-200">
+                        {specialist.firstName} {specialist.lastName}
+                      </span>
+
+                                            {rawScore > 0 && (
+                                                <div className="flex items-center gap-1.5">
+                                                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400 mb-0.5" />
+                                                    <span className="text-lg font-bold text-neutral-200">
+                            {rawScore.toFixed(1)}
+                          </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex items-center gap-2 text-sm text-neutral-500 font-medium">
+                                            <span>{specialist.specialization}</span>
+                                            {location && (
+                                                <>
+                                                    <span>•</span>
+                                                    <span>{location}</span>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        <p className="text-neutral-400 mt-1 max-w-3xl leading-relaxed">
+                                            {specialist.description}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col items-start sm:items-end gap-4 sm:min-w-[150px] w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t border-neutral-800 sm:border-0">
+                                    <div className="flex flex-col sm:items-end">
+                                        <span className="text-xs text-neutral-500 mb-1">Cena usługi</span>
+                                        <span className="text-xl font-semibold text-neutral-200 whitespace-nowrap">
+                      {getPriceLabel(specialist.prices)}
+                    </span>
                                     </div>
 
-                                    <div className="flex items-center gap-2 text-sm text-neutral-500 font-medium">
-                                        <span>{specialist.specialization}</span>
-                                        {specialist.city && (
-                                            <>
-                                                <span>•</span>
-                                                <span>{specialist.city}</span>
-                                            </>
-                                        )}
-                                    </div>
-
-                                    <p className="text-neutral-400 mt-1 max-w-3xl leading-relaxed">
-                                        {specialist.description}
-                                    </p>
+                                    <Button
+                                        href={`/specialist/${specialist.id}`}
+                                        className="w-full sm:w-auto"
+                                    >
+                                        Zobacz profil
+                                    </Button>
                                 </div>
-                            </div>
-
-                            <div className="flex flex-col items-start sm:items-end gap-4 sm:min-w-[150px] w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t border-neutral-800 sm:border-0">
-                                <div className="flex flex-col sm:items-end">
-                                    <span className="text-xs text-neutral-500 mb-1">Cena usługi</span>
-                                    <span className="text-xl font-semibold text-neutral-200 whitespace-nowrap">
-                                        {getPriceLabel(specialist.prices)}
-                                    </span>
-                                </div>
-
-                                <Button
-                                    href={`/specialist/${specialist.id}`}
-                                    className="w-full sm:w-auto"
-                                >
-                                    Zobacz profil
-                                </Button>
-                            </div>
-                        </Card>
-                    ))}
+                            </Card>
+                        );
+                    })}
                 </div>
             )}
         </div>

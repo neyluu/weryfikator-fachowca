@@ -9,7 +9,10 @@ import java.time.LocalDateTime;
 public class RatingResponse {
     private Long id;
     private Long authorId;
-    private Integer score;
+    private String authorName;
+    private Integer quality;
+    private Integer price;
+    private Integer timeliness;
     private String comment;
     private LocalDateTime createdAt;
 }

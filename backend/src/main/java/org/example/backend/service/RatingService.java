@@ -20,30 +20,41 @@ public class RatingService {
         Rating rating = Rating.builder()
                 .specialistId(request.getSpecialistId())
                 .authorId(authorId)
-                .score(request.getScore())
+                .quality(request.getQuality())
+                .price(request.getPrice())
+                .timeliness(request.getTimeliness())
                 .comment(request.getComment())
                 .build();
         ratingRepository.save(rating);
     }
 
     public RatingSummaryResponse getSpecialistRatingSummary(Long specialistId) {
-        Double avg = ratingRepository.getAverageScoreBySpecialistId(specialistId);
-        Long count = ratingRepository.countBySpecialistId(specialistId);
+        List<Rating> ratingEntities = ratingRepository.findBySpecialistIdOrderByCreatedAtDesc(specialistId);
+        long count = ratingEntities.size();
 
-        List<RatingResponse> ratings = ratingRepository.findBySpecialistIdOrderByCreatedAtDesc(specialistId)
-                .stream()
+        double avg = 0.0;
+        if (count > 0) {
+            double totalSum = ratingEntities.stream()
+                    .mapToDouble(r -> (r.getQuality() + r.getPrice() + r.getTimeliness()) / 3.0)
+                    .sum();
+            avg = totalSum / count;
+        }
+
+        List<RatingResponse> ratings = ratingEntities.stream()
                 .map(r -> RatingResponse.builder()
                         .id(r.getId())
                         .authorId(r.getAuthorId())
-                        .score(r.getScore())
+                        .quality(r.getQuality())
+                        .price(r.getPrice())
+                        .timeliness(r.getTimeliness())
                         .comment(r.getComment())
                         .createdAt(r.getCreatedAt())
                         .build())
                 .toList();
 
         return RatingSummaryResponse.builder()
-                .averageScore(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0)
-                .totalRatings(count != null ? count : 0L)
+                .averageScore(Math.round(avg * 10.0) / 10.0)
+                .totalRatings(count)
                 .ratings(ratings)
                 .build();
     }
