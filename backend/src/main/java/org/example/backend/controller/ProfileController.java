@@ -6,8 +6,10 @@ import org.example.backend.dto.request.profile.ProfileDto;
 import org.example.backend.dto.response.SearchProfileDto;
 import org.example.backend.entity.Profile;
 import org.example.backend.entity.User;
+import org.example.backend.entity.Rating;
 import org.example.backend.repository.ProfileRepository;
 import org.example.backend.repository.UserRepository;
+import org.example.backend.repository.RatingRepository;
 import org.example.backend.service.ProfileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,7 @@ public class ProfileController {
     private final ProfileService profileService = new ProfileService();
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
+    private final RatingRepository ratingRepository;
 
     @Transactional(readOnly = true)
     @GetMapping("/search")
@@ -35,7 +38,19 @@ public class ProfileController {
     ) {
         return profileRepository.search(service, city)
                 .stream()
-                .map(SearchProfileDto::of)
+                .map(profile -> {
+                    List<Rating> ratings = ratingRepository.findBySpecialistIdOrderByCreatedAtDesc(profile.getId());
+                    double avg = 0.0;
+
+                    if (!ratings.isEmpty()) {
+                        double sum = ratings.stream()
+                                .mapToDouble(r -> (r.getQuality() + r.getPrice() + r.getTimeliness()) / 3.0)
+                                .sum();
+                        avg = Math.round((sum / ratings.size()) * 10.0) / 10.0;
+                    }
+
+                    return SearchProfileDto.of(profile, avg);
+                })
                 .toList();
     }
 

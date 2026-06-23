@@ -11,6 +11,7 @@ public record SearchProfileDto(
         String experience,
         String city,
         String voivodeship,
+        Double averageScore,
         PricesPayload prices
 ) {
     public record PriceRangePayload(double min, double max) {}
@@ -21,7 +22,7 @@ public record SearchProfileDto(
             PriceEntryPayload project
     ) {}
 
-    public static SearchProfileDto of(Profile p) {
+    public static SearchProfileDto of(Profile p, Double averageScore) {
         String firstName = "";
         String lastName  = "";
 
@@ -75,6 +76,7 @@ public record SearchProfileDto(
                 p.getExperience(),
                 city,
                 voivodeship,
+                averageScore,
                 prices
         );
     }

@@ -1,8 +1,6 @@
 package org.example.backend.controller;
 
 import jakarta.validation.Valid;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.request.chat.SendMessageRequest;
 import org.example.backend.dto.request.profile.ImageDto;
@@ -20,11 +18,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/chat")
 @RequiredArgsConstructor
 public class ChatController {
-
     private final ChatService chatService;
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
@@ -97,51 +97,63 @@ public class ChatController {
             ? null
             : toMessageDTO(c.getMessages().get(c.getMessages().size() - 1));
 
-        User user = userRepository.getReferenceById(otherUserId);
+        Optional<User> userOpt = userRepository.findById(otherUserId);
+        if (userOpt.isEmpty()) {
+            return new ConversationDto(
+                    c.getId(),
+                    otherUserId,
+                    c.getSpecialistUserId(),
+                    last,
+                    "Nieznany użytkownik",
+                    "",
+                    "Brak danych",
+                    new LocalizationDto("Brak", "danych"),
+                    null, c.getCreatedAt()
+            );
+        }
+
+        User user = userOpt.get();
         Optional<Profile> profileRes = profileRepository.findByUser(user);
 
         if (profileRes.isPresent()) {
             Profile profile = profileRes.get();
 
             return new ConversationDto(
+                    c.getId(),
+                    otherUserId,
+                    c.getSpecialistUserId(),
+                    last,
+                    user.getFullName(),
+                    user.getEmail(),
+                    profile.getSpecialization(),
+                    new LocalizationDto(
+                        profile.getLocalization().getCity(),
+                        profile.getLocalization().getVoivodeship()
+                    ),
+                    mapProfileImage(profile.getProfilePicture()),
+                    c.getCreatedAt()
+            );
+        }
+
+        return new ConversationDto(
                 c.getId(),
                 otherUserId,
                 c.getSpecialistUserId(),
                 last,
                 user.getFullName(),
                 user.getEmail(),
-                profile.getSpecialization(),
-                new LocalizationDto(
-                    profile.getLocalization().getCity(),
-                    profile.getLocalization().getVoivodeship()
-                ),
-                mapProfileImage(profile.getProfilePicture()),
+                "Brak danych",
+                new LocalizationDto("Brak", "danych"),
+                null,
                 c.getCreatedAt()
-            );
-        }
-
-        return new ConversationDto(
-            c.getId(),
-            otherUserId,
-            c.getSpecialistUserId(),
-            last,
-            user.getFullName(),
-            user.getEmail(),
-            "Brak danych",
-            new LocalizationDto("Brak", " danych"),
-            null,
-            c.getCreatedAt()
         );
     }
 
     private static ImageDto mapProfileImage(ProfileImage image) {
         if (image == null) return null;
 
-        String base64 = java.util.Base64.getEncoder().encodeToString(
-            image.getData()
-        );
-        String url =
-            "data:image/" + image.getFileExtension() + ";base64," + base64;
+        String base64 = java.util.Base64.getEncoder().encodeToString(image.getData());
+        String url =  "data:image/" + image.getFileExtension() + ";base64," + base64;
 
         return new ImageDto(image.getId().toString(), null, url);
     }

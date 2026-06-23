@@ -1,6 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import Button from "../components/ui/Button.jsx";
 import OfferInitiator from "../components/ui/OfferInitiator.jsx";
@@ -57,7 +56,9 @@ export default function Chat() {
         return false;
       }
     });
+
     if (offerMessages.length === 0) return null;
+
     const last = offerMessages[offerMessages.length - 1];
     const parsed = JSON.parse(last.content);
     return { ...parsed, senderId: last.senderId, messageId: last.id };
@@ -133,11 +134,18 @@ export default function Chat() {
   async function loadConversation() {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/chat/conversations");
-      const conversations = await res.json();
+      const [convRes, profileRes] = await Promise.all([
+        apiFetch("/api/chat/conversations"),
+        apiFetch(`/api/profile/${professionalId}`),
+      ]);
+      const conversations = await convRes.json();
+      const profileJson = await profileRes.json();
+      setProfileData(profileJson);
+
       const existing = conversations.find(
         (c) => c.otherUserId === Number(professionalId),
       );
+
       if (existing) {
         setConversationId(existing.id);
         setConversation(existing);
@@ -161,6 +169,7 @@ export default function Chat() {
   async function sendMessage(e) {
     e.preventDefault();
     if (!content.trim()) return;
+
     try {
       const res = await apiFetch("/api/chat/messages", {
         method: "POST",
@@ -169,8 +178,13 @@ export default function Chat() {
           content: content.trim(),
         }),
       });
+
       const newMessage = await res.json();
-      if (!conversationId) setConversationId(newMessage.conversationId);
+
+      if (!conversationId) {
+        setConversationId(newMessage.conversationId);
+      }
+
       setMessages((prev) => [...prev, newMessage]);
       setContent("");
     } catch (e) {
@@ -326,26 +340,25 @@ export default function Chat() {
 
   useEffect(() => {
     if (!conversationId) return;
+
     const interval = setInterval(() => {
       loadMessages(conversationId);
     }, 1000);
+
     return () => clearInterval(interval);
   }, [conversationId]);
 
   if (loading) return <p>Ładowanie...</p>;
   if (error) return <p>{error}</p>;
 
-  async function handleShowProfile() {
-    const res = await apiFetch(`/api/profile/${professionalId}`);
-    const data = await res.json();
-    setProfileData(data);
+  function handleShowProfile() {
     setIsProfilePreviewModalOpen(true);
   }
+
   const isMine = (msg) => msg.senderId === user.userId;
 
   return (
     <div className="flex flex-col h-full text-neutral-100">
-      {/* Header czatu */}
       <div className="flex items-center justify-between p-4 border-b border-neutral-700">
         <div className="flex items-center gap-3">
           <button
@@ -367,34 +380,48 @@ export default function Chat() {
               />
             </svg>
           </button>
+
           <img
-            src={conversation?.profilePicture?.url ?? "/icons/profileIcon.svg"}
-            alt="Profile"
+            src={
+              conversation?.profilePicture?.url ??
+              profileData?.profilePicture?.url ??
+              "/icons/profileIcon.svg"
+            }
+            alt="Profile picture"
             className="w-12 h-12 rounded-2xl object-cover border border-neutral-600"
+            draggable="false"
           />
+
           <div>
             <p className="text-lg font-semibold">
-              {conversation?.fullName ?? `Użytkownik #${professionalId}`}
+              {conversation?.fullName ??
+                profileData?.fullName ??
+                `Użytkownik #${professionalId}`}
             </p>
             <p className="text-sm text-neutral-400">
-              {conversation?.specialization !== "Brak danych"
-                ? conversation?.specialization
-                : ""}
-            </p>
+              {conversation?.specialization &&
+              conversation.specialization !== "Brak danych"
+                ? conversation.specialization
+                : (profileData?.specialization ?? "")}
+            </p>{" "}
           </div>
         </div>
-        {conversation?.specialization !== "Brak danych" && (
-          <Button onClick={handleShowProfile}>Pokaż profil</Button>
+
+        {(conversation?.specialization !== "Brak danych" ||
+          profileData?.specialization) && (
+          <div>
+            <Button onClick={handleShowProfile}>Pokaż profil</Button>
+          </div>
         )}
       </div>
 
-      {/* Okno wiadomości */}
       <div className="flex-1 overflow-y-auto flex flex-col gap-2 p-4 max-h-140">
         {messages.length === 0 && (
           <p className="text-neutral-400 text-center mt-10">
             Brak wiadomości. Napisz coś!
           </p>
         )}
+
         {messages.map((msg, index) => {
           let offer = null;
           let isDataSubmitMsg = false;
@@ -624,8 +651,8 @@ export default function Chat() {
               data={{
                 profile: profileData,
                 user: {
-                  fullName: conversation?.fullName,
-                  email: conversation?.email,
+                  fullName: conversation?.fullName ?? profileData?.fullName,
+                  email: conversation?.email ?? profileData?.email,
                 },
               }}
             />

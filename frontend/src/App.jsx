@@ -1,8 +1,8 @@
 import {
   BrowserRouter as Router,
-  Routes,
-  Route,
   Navigate,
+  Route,
+  Routes,
 } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -19,9 +19,9 @@ import { AuthProvider } from "./context/AuthContext";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
 import SearchResults from "./pages/SearchResults";
-import ContactMeCard from "./components/ui/ContactMeCard.jsx";
 import Chat from "./pages/Chat.jsx";
 import ConversationList from "./pages/ConversationList.jsx";
+import SpecialistProfile from "./pages/SpecialistProfile";
 
 function App() {
   return (
@@ -63,14 +63,12 @@ function App() {
 
               <Route path="chat" element={<ConversationList />} />
               <Route path="chat/:professionalId" element={<Chat />} />
-
-              <Route
-                path="contact-me"
-                element={<ContactMeCard professionalId={1} />}
-              />
             </Route>
 
             <Route path="/search" element={<SearchResults />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/specialist/:id" element={<SpecialistProfile />} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>

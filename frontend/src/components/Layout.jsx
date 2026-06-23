@@ -24,7 +24,7 @@ const Layout = ({ children }) => {
       <div className="w-full flex flex-row items-center justify-center">
         <nav className="w-full max-w-5xl flex flex-row items-center justify-between px-4 py-2">
           <a
-            href={`${location.pathname.startsWith("/dashboard") ? "/dashboard" : "/"}`}
+            href="/"
             className="flex items-center gap-3"
           >
             <img
