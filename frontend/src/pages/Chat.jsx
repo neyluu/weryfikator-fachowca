@@ -6,6 +6,7 @@ import OfferInitiator from "../components/ui/OfferInitiator.jsx";
 import OfferBubble from "../components/ui/OfferBubble.jsx";
 import ProfileCard from "../components/ui/ProfileCard.jsx";
 import AuthImage from "../components/ui/AuthImage.jsx";
+import ImageLightbox from "../components/ui/ImageLightbox.jsx";
 
 function apiFetch(path, options = {}) {
   const token = localStorage.getItem("token");
@@ -34,6 +35,7 @@ export default function Chat() {
   const [isProfilePreviewModalOpen, setIsProfilePreviewModalOpen] =
     useState(false);
   const [profileData, setProfileData] = useState({});
+  const [lightbox, setLightbox] = useState(null);
 
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
@@ -490,29 +492,56 @@ export default function Chat() {
                   className={`flex flex-col gap-1 ${isMine(msg) ? "items-end" : "items-start"}`}
                 >
                   <div
-                    className={`grid  gap-1.5 max-w-[70%] p-3 rounded-3xl 
-                    ${
-                      isMine(msg)
-                        ? "bg-brand rounded-br-sm"
-                        : "bg-neutral-800 rounded-bl-sm"
-                    } 
-                    ${
-                      parsed.images.length === 1 ? "grid-cols-1" : "grid-cols-2"
-                    }
-                        `}
+                    className={`grid gap-1.5 max-w-[70%] p-1.5 rounded-3xl
+          ${isMine(msg) ? "bg-brand rounded-br-sm" : "bg-neutral-800 rounded-bl-sm"}
+          ${parsed.images.length === 1 ? "grid-cols-1" : "grid-cols-2"}
+        `}
                   >
-                    {parsed.images.map((img) => (
-                      <AuthImage
+                    {parsed.images.map((img, imgIndex) => (
+                      <div
                         key={img.id}
-                        url={`/api${img.url}`}
-                        className={`rounded-2xl object-cover w-full h-48 ${
-                          parsed.images.length === 1
-                            ? isMine(msg)
-                              ? "rounded-br-sm"
-                              : "rounded-bl-sm"
-                            : ""
-                        }`}
-                      />
+                        className="relative group cursor-zoom-in"
+                        onClick={() =>
+                          setLightbox({
+                            images: parsed.images,
+                            index: imgIndex,
+                          })
+                        }
+                      >
+                        <AuthImage
+                          url={`/api${img.url}`}
+                          className={`rounded-2xl object-cover w-full h-48 ${
+                            parsed.images.length === 1
+                              ? isMine(msg)
+                                ? "rounded-br-sm"
+                                : "rounded-bl-sm"
+                              : ""
+                          }`}
+                        />
+                        <div className="absolute inset-0 rounded-2xl bg-black/0 group-hover:bg-black/20 transition-colors flex items-end justify-end p-2">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-1">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-4 h-4 text-white"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0zm0 0l2 2"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8 11h6M11 8v6"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                   <small className="text-neutral-500 text-xs px-1">
@@ -521,7 +550,6 @@ export default function Chat() {
                 </div>
               );
             }
-
             if (parsed.type === "OFFER") offer = parsed;
             if (parsed.type === "CONTRACT_DATA_SUBMIT") isDataSubmitMsg = true;
 
@@ -727,7 +755,7 @@ export default function Chat() {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center"
+          className="w-10 h-10 rounded-full bg-neutral-800/30 flex items-center justify-center border border-neutral-600 hover:bg-neutral-800/80"
         >
           +
         </button>
@@ -783,6 +811,14 @@ export default function Chat() {
             />
           </div>
         </div>
+      )}
+
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          startIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
       )}
     </div>
   );
