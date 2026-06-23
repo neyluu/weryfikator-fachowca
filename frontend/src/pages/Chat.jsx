@@ -493,9 +493,9 @@ export default function Chat() {
                 >
                   <div
                     className={`grid gap-1.5 max-w-[70%] p-1.5 rounded-3xl
-          ${isMine(msg) ? "bg-brand rounded-br-sm" : "bg-neutral-800 rounded-bl-sm"}
-          ${parsed.images.length === 1 ? "grid-cols-1" : "grid-cols-2"}
-        `}
+                      ${isMine(msg) ? "bg-brand rounded-br-sm" : "bg-neutral-800 rounded-bl-sm"}
+                      ${parsed.images.length === 1 ? "grid-cols-1" : "grid-cols-2"}
+                    `}
                   >
                     {parsed.images.map((img, imgIndex) => (
                       <div
@@ -728,20 +728,31 @@ export default function Chat() {
       )}
 
       {selectedImages.length > 0 && (
-        <div className="px-4 py-2 flex gap-2 overflow-x-auto">
+        <div className="px-4 py-2 flex gap-2 overflow-x-auto items-center">
           {selectedImages.map((file, idx) => (
-            <img
-              key={idx}
-              src={URL.createObjectURL(file)}
-              alt=""
-              className="w-20 h-20 rounded-xl object-cover"
-            />
+            <div key={idx} className="relative shrink-0 group">
+              <img
+                src={URL.createObjectURL(file)}
+                alt=""
+                className="w-20 h-20 rounded-xl object-cover"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedImages((prev) => prev.filter((_, i) => i !== idx))
+                }
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-neutral-900 border
+                border-neutral-600 text-neutral-300 hover:text-white hover:bg-red-500 hover:border-red-500 flex items-center
+                justify-center text-xs leading-none transition-colors opacity-0 group-hover:opacity-100"
+              >
+                ×
+              </button>
+            </div>
           ))}
 
           <Button onClick={sendImages}>Wyślij ({selectedImages.length})</Button>
         </div>
       )}
-
       <div className="p-4 border-t border-neutral-700 flex gap-3 items-center">
         <input
           ref={fileInputRef}
