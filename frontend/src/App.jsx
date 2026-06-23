@@ -1,8 +1,8 @@
 import {
   BrowserRouter as Router,
-  Routes,
-  Route,
   Navigate,
+  Route,
+  Routes,
 } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -20,7 +20,6 @@ import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
 import SearchResults from "./pages/SearchResults";
 import ContractTestPage from "./pages/ContractTestPage.jsx";
-import ContactMeCard from "./components/ui/ContactMeCard.jsx";
 import Chat from "./pages/Chat.jsx";
 import ConversationList from "./pages/ConversationList.jsx";
 import SpecialistProfile from "./pages/SpecialistProfile";
@@ -66,21 +65,13 @@ function App() {
               <Route path="contracts" element={<ContractTestPage />} />
               <Route path="chat" element={<ConversationList />} />
               <Route path="chat/:professionalId" element={<Chat />} />
-
-              <Route
-                path="contact-me"
-                element={<ContactMeCard professionalId={1} />}
-              />
             </Route>
 
             <Route path="/search" element={<SearchResults />} />
             <Route path="/search" element={<SearchResults />} />
-            <Route path="/specialist/:id" element={<SpecialistProfile />} />  {/* NOWA LINIA */}
-            <Route path="*" element={<NotFound />} />
+            <Route path="/specialist/:id" element={<SpecialistProfile />} />
 
             <Route path="*" element={<NotFound />} />
-
-
           </Routes>
         </Layout>
       </AuthProvider>
