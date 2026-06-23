@@ -23,6 +23,7 @@ import ContractTestPage from "./pages/ContractTestPage.jsx";
 import ContactMeCard from "./components/ui/ContactMeCard.jsx";
 import Chat from "./pages/Chat.jsx";
 import ConversationList from "./pages/ConversationList.jsx";
+import SpecialistProfile from "./pages/SpecialistProfile";
 
 function App() {
   return (
@@ -73,7 +74,13 @@ function App() {
             </Route>
 
             <Route path="/search" element={<SearchResults />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/specialist/:id" element={<SpecialistProfile />} />  {/* NOWA LINIA */}
             <Route path="*" element={<NotFound />} />
+
+            <Route path="*" element={<NotFound />} />
+
+
           </Routes>
         </Layout>
       </AuthProvider>
