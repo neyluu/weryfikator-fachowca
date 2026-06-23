@@ -5,6 +5,7 @@ import Button from "../components/ui/Button.jsx";
 import OfferInitiator from "../components/ui/OfferInitiator.jsx";
 import OfferBubble from "../components/ui/OfferBubble.jsx";
 import ProfileCard from "../components/ui/ProfileCard.jsx";
+import AuthImage from "../components/ui/AuthImage.jsx";
 
 function apiFetch(path, options = {}) {
   const token = localStorage.getItem("token");
@@ -24,6 +25,8 @@ export default function Chat() {
 
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
+  const [selectedImages, setSelectedImages] = useState([]);
+  const fileInputRef = useRef(null);
   const [conversationId, setConversationId] = useState(null);
   const [conversation, setConversation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -355,6 +358,56 @@ export default function Chat() {
     setIsProfilePreviewModalOpen(true);
   }
 
+  function handleImageSelect(e) {
+    const files = Array.from(e.target.files);
+
+    setSelectedImages((prev) => {
+      const merged = [...prev, ...files];
+
+      if (merged.length > 4) {
+        setError("Maksymalnie 4 zdjęcia");
+        return prev;
+      }
+
+      return merged;
+    });
+  }
+
+  async function sendImages() {
+    if (!selectedImages.length) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const formData = new FormData();
+
+      selectedImages.forEach((file) => {
+        formData.append("images", file);
+      });
+
+      const uploadRes = await fetch("/api/chat/images", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!uploadRes.ok) throw new Error();
+
+      const uploaded = await uploadRes.json();
+
+      await sendSpecialMessage({
+        type: "IMAGE",
+        images: uploaded,
+      });
+
+      setSelectedImages([]);
+    } catch {
+      setError("Nie udało się wysłać zdjęć.");
+    }
+  }
+
   const isMine = (msg) => msg.senderId === user.userId;
 
   return (
@@ -429,6 +482,46 @@ export default function Chat() {
 
           try {
             const parsed = JSON.parse(msg.content);
+
+            if (parsed?.type === "IMAGE") {
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col gap-1 ${isMine(msg) ? "items-end" : "items-start"}`}
+                >
+                  <div
+                    className={`grid  gap-1.5 max-w-[70%] p-3 rounded-3xl 
+                    ${
+                      isMine(msg)
+                        ? "bg-brand rounded-br-sm"
+                        : "bg-neutral-800 rounded-bl-sm"
+                    } 
+                    ${
+                      parsed.images.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                    }
+                        `}
+                  >
+                    {parsed.images.map((img) => (
+                      <AuthImage
+                        key={img.id}
+                        url={`/api${img.url}`}
+                        className={`rounded-2xl object-cover w-full h-48 ${
+                          parsed.images.length === 1
+                            ? isMine(msg)
+                              ? "rounded-br-sm"
+                              : "rounded-bl-sm"
+                            : ""
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <small className="text-neutral-500 text-xs px-1">
+                    {new Date(msg.sentAt).toLocaleTimeString()}
+                  </small>
+                </div>
+              );
+            }
+
             if (parsed.type === "OFFER") offer = parsed;
             if (parsed.type === "CONTRACT_DATA_SUBMIT") isDataSubmitMsg = true;
 
@@ -606,7 +699,39 @@ export default function Chat() {
         <OfferInitiator onSendOffer={sendOffer} currentOffer={currentOffer} />
       )}
 
+      {selectedImages.length > 0 && (
+        <div className="px-4 py-2 flex gap-2 overflow-x-auto">
+          {selectedImages.map((file, idx) => (
+            <img
+              key={idx}
+              src={URL.createObjectURL(file)}
+              alt=""
+              className="w-20 h-20 rounded-xl object-cover"
+            />
+          ))}
+
+          <Button onClick={sendImages}>Wyślij ({selectedImages.length})</Button>
+        </div>
+      )}
+
       <div className="p-4 border-t border-neutral-700 flex gap-3 items-center">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleImageSelect}
+        />
+
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center"
+        >
+          +
+        </button>
+
         <input
           value={content}
           onChange={(e) => setContent(e.target.value)}

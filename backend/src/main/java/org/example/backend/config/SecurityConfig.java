@@ -46,7 +46,8 @@ public class SecurityConfig {
                     .requestMatchers("/profile/**").authenticated()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .requestMatchers("/specialist/**").hasAnyRole("ADMIN", "SPECIALIST")
-                    .requestMatchers("/chat/**").authenticated().requestMatchers("/contracts/**").authenticated()
+                    .requestMatchers("/chat/**").authenticated()
+                    .requestMatchers("/contracts/**").authenticated()
                     .anyRequest().authenticated()
             )
             .addFilterBefore(
