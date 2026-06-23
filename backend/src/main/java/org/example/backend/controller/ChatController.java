@@ -31,63 +31,81 @@ public class ChatController {
 
     @PostMapping("/messages")
     public ResponseEntity<MessageDto> sendMessage(
-            @Valid @RequestBody SendMessageRequest req,
-            @AuthenticationPrincipal Long senderId) {
-
-        Message msg = chatService.sendMessage(senderId, req.receiverId(), req.content());
+        @Valid @RequestBody SendMessageRequest req,
+        @AuthenticationPrincipal Long senderId
+    ) {
+        Message msg = chatService.sendMessage(
+            senderId,
+            req.receiverId(),
+            req.content()
+        );
         return ResponseEntity.status(201).body(toMessageDTO(msg));
     }
 
     @GetMapping("/conversations")
     @Transactional(readOnly = true)
     public List<ConversationDto> getConversations(
-            @AuthenticationPrincipal Long userId) {
-
-        return chatService.getConversations(userId).stream()
-                .map(c -> toConversationDTO(c, userId))
-                .toList();
+        @AuthenticationPrincipal Long userId
+    ) {
+        return chatService
+            .getConversations(userId)
+            .stream()
+            .map(c -> toConversationDTO(c, userId))
+            .toList();
     }
 
     @GetMapping("/conversations/{conversationId}/messages")
     public PagedMessagesDto getMessages(
-            @PathVariable Long conversationId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
-
-        Page<Message> result = chatService.getMessages(conversationId, page, size);
+        @PathVariable Long conversationId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "50") int size
+    ) {
+        Page<Message> result = chatService.getMessages(
+            conversationId,
+            page,
+            size
+        );
         return new PagedMessagesDto(
-                result.getContent().stream().map(this::toMessageDTO).toList(),
-                result.getNumber(),
-                result.getTotalPages(),
-                result.getTotalElements(),
-                result.hasNext()
+            result.getContent().stream().map(this::toMessageDTO).toList(),
+            result.getNumber(),
+            result.getTotalPages(),
+            result.getTotalElements(),
+            result.hasNext()
         );
     }
 
     private MessageDto toMessageDTO(Message m) {
         return new MessageDto(
-                m.getId(),
-                m.getConversation().getId(),
-                m.getSenderId(),
-                m.getContent(),
-                m.getSentAt(),
-                m.getReadAt()
+            m.getId(),
+            m.getConversation().getId(),
+            m.getSenderId(),
+            m.getContent(),
+            m.getSentAt(),
+            m.getReadAt()
         );
     }
 
-    private ConversationDto toConversationDTO(Conversation c, Long currentUserId) {
+    private ConversationDto toConversationDTO(
+        Conversation c,
+        Long currentUserId
+    ) {
         Long otherUserId = c.getUser1Id().equals(currentUserId)
-                ? c.getUser2Id()
-                : c.getUser1Id();
+            ? c.getUser2Id()
+            : c.getUser1Id();
 
-        MessageDto last = c.getMessages().isEmpty() ? null
-                : toMessageDTO(c.getMessages().get(c.getMessages().size() - 1));
+        MessageDto last = c.getMessages().isEmpty()
+            ? null
+            : toMessageDTO(c.getMessages().get(c.getMessages().size() - 1));
 
         Optional<User> userOpt = userRepository.findById(otherUserId);
         if (userOpt.isEmpty()) {
             return new ConversationDto(
-                    c.getId(), otherUserId, last,
-                    "Nieznany użytkownik", "",
+                    c.getId(),
+                    otherUserId,
+                    c.getSpecialistUserId(),
+                    last,
+                    "Nieznany użytkownik",
+                    "",
                     "Brak danych",
                     new LocalizationDto("Brak", "danych"),
                     null, c.getCreatedAt()
@@ -99,16 +117,18 @@ public class ChatController {
 
         if (profileRes.isPresent()) {
             Profile profile = profileRes.get();
+
             return new ConversationDto(
                     c.getId(),
                     otherUserId,
+                    c.getSpecialistUserId(),
                     last,
                     user.getFullName(),
                     user.getEmail(),
                     profile.getSpecialization(),
                     new LocalizationDto(
-                            profile.getLocalization().getCity(),
-                            profile.getLocalization().getVoivodeship()
+                        profile.getLocalization().getCity(),
+                        profile.getLocalization().getVoivodeship()
                     ),
                     mapProfileImage(profile.getProfilePicture()),
                     c.getCreatedAt()
@@ -118,6 +138,7 @@ public class ChatController {
         return new ConversationDto(
                 c.getId(),
                 otherUserId,
+                c.getSpecialistUserId(),
                 last,
                 user.getFullName(),
                 user.getEmail(),
@@ -132,7 +153,7 @@ public class ChatController {
         if (image == null) return null;
 
         String base64 = java.util.Base64.getEncoder().encodeToString(image.getData());
-        String url = "data:image/" + image.getFileExtension() + ";base64," + base64;
+        String url =  "data:image/" + image.getFileExtension() + ";base64," + base64;
 
         return new ImageDto(image.getId().toString(), null, url);
     }

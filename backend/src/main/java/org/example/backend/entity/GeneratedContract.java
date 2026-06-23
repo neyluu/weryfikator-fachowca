@@ -85,8 +85,12 @@ public class GeneratedContract {
     private String penaltyAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "generated_by_user_id")
-    private User generatedByUser;
+    @JoinColumn(name = "client_user_id", nullable = false)
+    private User clientUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "specialist_user_id", nullable = false)
+    private User specialistUser;
 
     @PrePersist
     protected void onCreate() {
