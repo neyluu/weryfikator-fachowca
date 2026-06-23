@@ -7,6 +7,7 @@ import org.example.backend.entity.ProfileImage;
 public record ProfileDto(
     String specialization,
     String description,
+    String fullName,
     LocalizationDto localization,
     String phoneNumber,
     String email,
@@ -23,6 +24,7 @@ public record ProfileDto(
         return new ProfileDto(
             profile.getSpecialization(),
             profile.getDescription(),
+            profile.getUser().getFullName(),
             new LocalizationDto(
                 profile.getLocalization().getCity(),
                 profile.getLocalization().getVoivodeship()

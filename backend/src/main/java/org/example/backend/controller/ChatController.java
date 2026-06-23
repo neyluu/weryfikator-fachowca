@@ -83,13 +83,22 @@ public class ChatController {
         MessageDto last = c.getMessages().isEmpty() ? null
                 : toMessageDTO(c.getMessages().get(c.getMessages().size() - 1));
 
-        User user = userRepository.getReferenceById(otherUserId);
+        Optional<User> userOpt = userRepository.findById(otherUserId);
+        if (userOpt.isEmpty()) {
+            return new ConversationDto(
+                    c.getId(), otherUserId, last,
+                    "Nieznany użytkownik", "",
+                    "Brak danych",
+                    new LocalizationDto("Brak", "danych"),
+                    null, c.getCreatedAt()
+            );
+        }
+
+        User user = userOpt.get();
         Optional<Profile> profileRes = profileRepository.findByUser(user);
 
-        if(profileRes.isPresent())
-        {
+        if (profileRes.isPresent()) {
             Profile profile = profileRes.get();
-
             return new ConversationDto(
                     c.getId(),
                     otherUserId,
@@ -98,8 +107,8 @@ public class ChatController {
                     user.getEmail(),
                     profile.getSpecialization(),
                     new LocalizationDto(
-                        profile.getLocalization().getCity(),
-                        profile.getLocalization().getVoivodeship()
+                            profile.getLocalization().getCity(),
+                            profile.getLocalization().getVoivodeship()
                     ),
                     mapProfileImage(profile.getProfilePicture()),
                     c.getCreatedAt()
@@ -113,10 +122,7 @@ public class ChatController {
                 user.getFullName(),
                 user.getEmail(),
                 "Brak danych",
-                new LocalizationDto(
-                        "Brak",
-                        " danych"
-                ),
+                new LocalizationDto("Brak", "danych"),
                 null,
                 c.getCreatedAt()
         );
@@ -126,7 +132,7 @@ public class ChatController {
         if (image == null) return null;
 
         String base64 = java.util.Base64.getEncoder().encodeToString(image.getData());
-        String url =  "data:image/" + image.getFileExtension() + ";base64," + base64;
+        String url = "data:image/" + image.getFileExtension() + ";base64," + base64;
 
         return new ImageDto(image.getId().toString(), null, url);
     }
