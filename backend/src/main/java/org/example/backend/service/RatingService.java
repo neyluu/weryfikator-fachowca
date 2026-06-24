@@ -35,8 +35,10 @@ public class RatingService {
                 .build();
 
         if (request.getImages() != null && !request.getImages().isEmpty()) {
-            String uploadDir = "C:\\Users\\macie\\OneDrive\\Dokumenty\\GitHub\\weryfikator-fachowca\\frontend\\public\\images\\samples\\";
-            
+            String uploadDir = "uploads/ratings/";
+            File dir = new File(uploadDir);
+            if (!dir.exists()) dir.mkdirs();
+
             for (String base64Str : request.getImages()) {
                 try {
                     String cleanBase64 = base64Str.contains(",") ? base64Str.split(",")[1] : base64Str;
@@ -50,7 +52,7 @@ public class RatingService {
                     }
 
                     RatingImage ratingImage = RatingImage.builder()
-                            .url("/images/samples/" + fileName)
+                            .url("/uploads/ratings/" + fileName)
                             .rating(rating)
                             .build();
                     

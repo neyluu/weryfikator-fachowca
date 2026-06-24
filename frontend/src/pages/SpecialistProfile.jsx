@@ -259,7 +259,8 @@ export default function SpecialistProfile() {
                         {ratingItem.images.map((img, idx) => (
                           <img
                             key={img.id || idx}
-                            src={img.url ? (img.url.startsWith("http") || img.url.startsWith("/") ? img.url : `/api${img.url}`) : img}
+                            // Jeżeli img to po prostu "/uploads/ratings/...", przekaż to bezpośrednio do src
+                            src={typeof img === 'string' ? img : img.url}
                             alt="Załącznik do opinii"
                             className="w-24 h-24 object-cover rounded-xl border border-neutral-700"
                           />

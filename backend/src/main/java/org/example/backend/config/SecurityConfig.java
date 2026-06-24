@@ -43,6 +43,7 @@ public class SecurityConfig {
                     .requestMatchers("/profile/me").authenticated()
                     .requestMatchers(HttpMethod.GET, "/profile/{id}").permitAll()
                     .requestMatchers(HttpMethod.GET, "/ratings/specialist/**").permitAll()
+                    .requestMatchers("/uploads/**").permitAll()
                     .requestMatchers("/profile/**").authenticated()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .requestMatchers("/specialist/**").hasAnyRole("ADMIN", "SPECIALIST")
