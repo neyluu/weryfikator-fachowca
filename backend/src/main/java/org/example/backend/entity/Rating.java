@@ -3,6 +3,8 @@ package org.example.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "ratings")
@@ -36,6 +38,10 @@ public class Rating {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "rating", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<RatingImage> images = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

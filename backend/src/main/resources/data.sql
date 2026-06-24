@@ -3,7 +3,7 @@
 
 BEGIN;
 
-TRUNCATE TABLE profile_categories, profiles, users RESTART IDENTITY CASCADE;
+TRUNCATE TABLE profile_categories, profiles, users, ratings, rating_images RESTART IDENTITY CASCADE;
 
 INSERT INTO users (full_name, email, password_hash, role, created_at, updated_at)
 VALUES
@@ -227,5 +227,16 @@ JOIN (VALUES
     ('marcin.zajac@example.com',         'Lakiernictwo'),
     ('patrycja.sikora@example.com',      'Ogrodnictwo')
 ) AS c(email, category) ON c.email = u.email;
+
+INSERT INTO ratings (id, specialist_id, author_id, quality, price, timeliness, comment, created_at)
+VALUES 
+(101, 1, 2, 5, 5, 4, 'Ekipa spisała się znakomicie podczas wykończenia salonu. Kafelki ułożone równo.', NOW()),
+(102, 1, 3, 4, 3, 5, 'Remont łazienki przebiegł szybko, hydraulika działa bez zarzutu. Polecam!', NOW());
+
+INSERT INTO rating_images (id, rating_id, url)
+VALUES 
+(1, 101, '/images/samples/review_tiles_1.jpg'),
+(2, 101, '/images/samples/review_tiles_2.jpg'),
+(3, 102, '/images/samples/review_bathroom.jpg');
 
 COMMIT;

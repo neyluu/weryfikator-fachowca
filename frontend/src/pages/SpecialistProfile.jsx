@@ -28,15 +28,14 @@ export default function SpecialistProfile() {
   usePageTitle("Profil fachowca - Weryfikator Fachowca");
   const { id } = useParams();
   const { user } = useAuth();
-
   const [profileData, setProfileData] = useState(null);
   const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
   const [scores, setScores] = useState({ quality: 0, price: 0, timeliness: 0 });
   const [hovers, setHovers] = useState({ quality: 0, price: 0, timeliness: 0 });
   const [newComment, setNewComment] = useState("");
+  const [reviewImages, setReviewImages] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -45,7 +44,6 @@ export default function SpecialistProfile() {
       const token = localStorage.getItem("token");
       const headers = { "Content-Type": "application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
-
       const res = await fetch(`/api/ratings/specialist/${id}`, {
         method: "GET",
         headers,
@@ -66,18 +64,15 @@ export default function SpecialistProfile() {
         const token = localStorage.getItem("token");
         const headers = { "Content-Type": "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
-
         const profileRes = await fetch(`/api/profile/${id}`, {
           method: "GET",
           headers,
         });
-
         if (!profileRes.ok) {
           if (profileRes.status === 404)
             throw new Error("Nie znaleziono profilu fachowca.");
           throw new Error("Wystąpił błąd podczas pobierania profilu.");
         }
-
         const fetchedProfile = await profileRes.json();
         setProfileData(fetchedProfile);
       } catch (err) {
@@ -86,7 +81,6 @@ export default function SpecialistProfile() {
         setLoading(false);
       }
     }
-
     fetchProfileData();
     fetchRatings();
   }, [id]);
@@ -99,12 +93,25 @@ export default function SpecialistProfile() {
       );
       return;
     }
-
     setSubmitting(true);
     setSubmitError("");
 
     try {
       const token = localStorage.getItem("token");
+      const processedImages = await Promise.all(
+        reviewImages.map(async (img) => {
+          if (img.file instanceof File) {
+            return await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.readAsDataURL(img.file);
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = (err) => reject(err);
+            });
+          }
+          return img.url;
+        })
+      );
+
       const res = await fetch("/api/ratings", {
         method: "POST",
         headers: {
@@ -117,6 +124,7 @@ export default function SpecialistProfile() {
           price: scores.price,
           timeliness: scores.timeliness,
           comment: newComment,
+          images: processedImages,
         }),
       });
 
@@ -126,6 +134,7 @@ export default function SpecialistProfile() {
 
       setScores({ quality: 0, price: 0, timeliness: 0 });
       setNewComment("");
+      setReviewImages([]);
       await fetchRatings();
     } catch (err) {
       setSubmitError(err.message);
@@ -134,12 +143,21 @@ export default function SpecialistProfile() {
     }
   };
 
+  const handleImageSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const newImgs = files.map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      url: URL.createObjectURL(file),
+    }));
+    setReviewImages((prev) => [...prev, ...newImgs]);
+  };
+
   const renderStarsInput = (key, label) => (
     <div className="flex items-center justify-between sm:justify-start sm:gap-8">
       <span className="text-sm text-neutral-400 w-24">{label}</span>
       <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
+        {[1, 2, 3, 4, 5].map((star) => (           <button
             key={star}
             type="button"
             onClick={() => setScores((prev) => ({ ...prev, [key]: star }))}
@@ -149,10 +167,7 @@ export default function SpecialistProfile() {
           >
             <Star
               className={`w-7 h-7 sm:w-8 sm:h-8 ${
-                star <= (hovers[key] || scores[key])
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "text-neutral-700"
-              } transition-colors`}
+                star <= (hovers[key] || scores[key])                   ? "fill-yellow-400 text-yellow-400"                   : "text-neutral-700"               } transition-colors`}
             />
           </button>
         ))}
@@ -186,7 +201,6 @@ export default function SpecialistProfile() {
         contactButton={true}
         id={id}
       />
-
       <Section title="Opinie użytkowników">
         {ratings.length > 0 ? (
           <div className="flex flex-col gap-3">
@@ -200,7 +214,6 @@ export default function SpecialistProfile() {
                         3,
                     )
                   : ratingItem.score || 0;
-
               return (
                 <Card key={ratingItem.id} className="flex flex-col gap-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -235,12 +248,26 @@ export default function SpecialistProfile() {
                       )}
                     </div>
                   </div>
-
-                  <div className="flex flex-col">
-                    <p className="mt-2 text-neutral-400 leading-relaxed">
+                  <div className="flex flex-col gap-3">
+                    <p className="text-neutral-400 leading-relaxed">
                       {ratingItem.comment || "Brak komentarza."}
                     </p>
-                    <p className="mt-2 text-neutral-500 text-xs">
+                    
+                    {/* WIZUALIZACJA ZDJĘĆ W OPINII */}
+                    {ratingItem.images && ratingItem.images.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {ratingItem.images.map((img, idx) => (
+                          <img
+                            key={img.id || idx}
+                            src={img.url ? (img.url.startsWith("http") || img.url.startsWith("/") ? img.url : `/api${img.url}`) : img}
+                            alt="Załącznik do opinii"
+                            className="w-24 h-24 object-cover rounded-xl border border-neutral-700"
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    <p className="text-neutral-500 text-xs">
                       {formatDate(ratingItem.createdAt)}
                     </p>
                   </div>
@@ -255,20 +282,17 @@ export default function SpecialistProfile() {
             </p>
           </div>
         )}
-
         {user ? (
           <Card className="mt-6 flex flex-col gap-4 border-dashed border-2 border-neutral-700/50 bg-neutral-900/20">
             <h3 className="text-lg font-medium text-neutral-100">
               Dodaj opinię
             </h3>
-
             <form onSubmit={handleRatingSubmit} className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
                 {renderStarsInput("quality", "Jakość usługi")}
                 {renderStarsInput("price", "Cena")}
                 {renderStarsInput("timeliness", "Terminowość")}
               </div>
-
               <div className="flex flex-col gap-2">
                 <span className="text-sm text-neutral-400">Twój komentarz</span>
                 <TextArea
@@ -279,12 +303,46 @@ export default function SpecialistProfile() {
                 />
               </div>
 
+              
+              <div className="flex flex-col gap-2">
+                <span className="text-sm text-neutral-400">Zdjęcia wykonanej pracy (opcjonalnie)</span>
+                <label className="cursor-pointer border-2 border-dashed border-neutral-700 hover:border-neutral-400 transition rounded-xl p-4 flex flex-col items-center justify-center text-neutral-500 hover:text-neutral-300">
+                  <span className="text-sm">Kliknij, aby wybrać pliki</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageSelect}
+                  />
+                </label>
+                {reviewImages.length > 0 && (
+                  <div className="grid grid-cols-4 gap-2 mt-2">
+                    {reviewImages.map((img) => (
+                      <div key={img.id} className="relative group aspect-square">
+                        <img
+                          src={img.url}
+                          alt="Podgląd"
+                          className="w-full h-full object-cover rounded-lg border border-neutral-800"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setReviewImages((prev) => prev.filter((i) => i.id !== img.id))}
+                          className="absolute top-1 right-1 bg-black/70 hover:bg-red-500 text-white text-xs w-5 h-5 rounded-md flex items-center justify-center transition"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {submitError && (
                 <p className="text-red-500 text-sm font-medium">
                   {submitError}
                 </p>
               )}
-
               <div className="flex justify-end mt-2">
                 <Button type="submit" disabled={submitting}>
                   {submitting ? "Dodawanie..." : "Opublikuj opinię"}

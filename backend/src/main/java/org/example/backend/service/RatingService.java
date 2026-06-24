@@ -5,10 +5,17 @@ import org.example.backend.dto.request.RatingRequest;
 import org.example.backend.dto.response.RatingResponse;
 import org.example.backend.dto.response.RatingSummaryResponse;
 import org.example.backend.entity.Rating;
+import org.example.backend.entity.RatingImage;
 import org.example.backend.repository.RatingRepository;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +31,36 @@ public class RatingService {
                 .price(request.getPrice())
                 .timeliness(request.getTimeliness())
                 .comment(request.getComment())
+                .images(new ArrayList<>())
                 .build();
+
+        if (request.getImages() != null && !request.getImages().isEmpty()) {
+            String uploadDir = "C:\\Users\\macie\\OneDrive\\Dokumenty\\GitHub\\weryfikator-fachowca\\frontend\\public\\images\\samples\\";
+            
+            for (String base64Str : request.getImages()) {
+                try {
+                    String cleanBase64 = base64Str.contains(",") ? base64Str.split(",")[1] : base64Str;
+                    byte[] data = Base64.getDecoder().decode(cleanBase64);
+                    
+                    String fileName = UUID.randomUUID().toString() + ".jpg";
+                    File file = new File(uploadDir + fileName);
+                    
+                    try (OutputStream stream = new FileOutputStream(file)) {
+                        stream.write(data);
+                    }
+
+                    RatingImage ratingImage = RatingImage.builder()
+                            .url("/images/samples/" + fileName)
+                            .rating(rating)
+                            .build();
+                    
+                    rating.getImages().add(ratingImage);
+                } catch (Exception e) {
+                    System.err.println("Błąd zapisu zdjęcia: " + e.getMessage());
+                }
+            }
+        }
+
         ratingRepository.save(rating);
     }
 
@@ -49,6 +85,7 @@ public class RatingService {
                         .timeliness(r.getTimeliness())
                         .comment(r.getComment())
                         .createdAt(r.getCreatedAt())
+                        .images(r.getImages().stream().map(RatingImage::getUrl).toList())
                         .build())
                 .toList();
 
