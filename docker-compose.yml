@@ -21,6 +21,7 @@ services:
     volumes:
       - ./backend:/app
       - /app/.mvn
+      - ./backend/uploads:/app/uploads
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
