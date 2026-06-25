@@ -129,7 +129,8 @@ export default function SpecialistProfile() {
       });
 
       if (!res.ok) {
-        throw new Error("Nie udało się dodać opinii. Spróbuj ponownie.");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Nie udało się dodać opinii. Spróbuj ponownie.");
       }
 
       setScores({ quality: 0, price: 0, timeliness: 0 });
@@ -157,7 +158,8 @@ export default function SpecialistProfile() {
     <div className="flex items-center justify-between sm:justify-start sm:gap-8">
       <span className="text-sm text-neutral-400 w-24">{label}</span>
       <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (           <button
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
             key={star}
             type="button"
             onClick={() => setScores((prev) => ({ ...prev, [key]: star }))}
@@ -167,7 +169,10 @@ export default function SpecialistProfile() {
           >
             <Star
               className={`w-7 h-7 sm:w-8 sm:h-8 ${
-                star <= (hovers[key] || scores[key])                   ? "fill-yellow-400 text-yellow-400"                   : "text-neutral-700"               } transition-colors`}
+                star <= (hovers[key] || scores[key])
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "text-neutral-700"
+              } transition-colors`}
             />
           </button>
         ))}
@@ -253,13 +258,11 @@ export default function SpecialistProfile() {
                       {ratingItem.comment || "Brak komentarza."}
                     </p>
                     
-                    {/* WIZUALIZACJA ZDJĘĆ W OPINII */}
                     {ratingItem.images && ratingItem.images.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-1">
                         {ratingItem.images.map((img, idx) => (
                           <img
                             key={img.id || idx}
-                            // Jeżeli img to po prostu "/uploads/ratings/...", przekaż to bezpośrednio do src
                             src={typeof img === 'string' ? img : img.url}
                             alt="Załącznik do opinii"
                             className="w-24 h-24 object-cover rounded-xl border border-neutral-700"
@@ -304,7 +307,6 @@ export default function SpecialistProfile() {
                 />
               </div>
 
-              
               <div className="flex flex-col gap-2">
                 <span className="text-sm text-neutral-400">Zdjęcia wykonanej pracy (opcjonalnie)</span>
                 <label className="cursor-pointer border-2 border-dashed border-neutral-700 hover:border-neutral-400 transition rounded-xl p-4 flex flex-col items-center justify-center text-neutral-500 hover:text-neutral-300">

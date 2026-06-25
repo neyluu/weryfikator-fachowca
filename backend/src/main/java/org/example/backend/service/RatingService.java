@@ -22,8 +22,13 @@ import java.util.UUID;
 public class RatingService {
 
     private final RatingRepository ratingRepository;
+    private final ModerationService moderationService;
 
     public void saveRating(RatingRequest request, Long authorId) {
+        if (moderationService.isProfane(request.getComment())) {
+            throw new IllegalArgumentException("Komentarz zawiera nieodpowiednie treści.");
+        }
+
         Rating rating = Rating.builder()
                 .specialistId(request.getSpecialistId())
                 .authorId(authorId)
