@@ -24,6 +24,8 @@ const formatDate = (dateInput) => {
   }
 };
 
+const MAX_IMAGES = 8;
+
 export default function SpecialistProfile() {
   usePageTitle("Profil fachowca - Weryfikator Fachowca");
   const { id } = useParams();
@@ -93,6 +95,12 @@ export default function SpecialistProfile() {
       );
       return;
     }
+    if (reviewImages.length > MAX_IMAGES) {
+      setSubmitError(
+        `Możesz dodać maksymalnie ${MAX_IMAGES} zdjęć. Usuń ${reviewImages.length - MAX_IMAGES} ${reviewImages.length - MAX_IMAGES === 1 ? "zdjęcie" : reviewImages.length - MAX_IMAGES < 5 ? "zdjęcia" : "zdjęć"} przed publikacją.`,
+      );
+      return;
+    }
     setSubmitting(true);
     setSubmitError("");
 
@@ -109,7 +117,7 @@ export default function SpecialistProfile() {
             });
           }
           return img.url;
-        })
+        }),
       );
 
       const res = await fetch("/api/ratings", {
@@ -157,7 +165,8 @@ export default function SpecialistProfile() {
     <div className="flex items-center justify-between sm:justify-start sm:gap-8">
       <span className="text-sm text-neutral-400 w-24">{label}</span>
       <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (           <button
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
             key={star}
             type="button"
             onClick={() => setScores((prev) => ({ ...prev, [key]: star }))}
@@ -167,7 +176,10 @@ export default function SpecialistProfile() {
           >
             <Star
               className={`w-7 h-7 sm:w-8 sm:h-8 ${
-                star <= (hovers[key] || scores[key])                   ? "fill-yellow-400 text-yellow-400"                   : "text-neutral-700"               } transition-colors`}
+                star <= (hovers[key] || scores[key])
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "text-neutral-700"
+              } transition-colors`}
             />
           </button>
         ))}
@@ -190,6 +202,9 @@ export default function SpecialistProfile() {
       </div>
     );
   }
+
+  const imageCount = reviewImages.length;
+  const isOverLimit = imageCount > MAX_IMAGES;
 
   return (
     <div className="w-full flex flex-col gap-10 py-10">
@@ -252,15 +267,13 @@ export default function SpecialistProfile() {
                     <p className="text-neutral-400 leading-relaxed">
                       {ratingItem.comment || "Brak komentarza."}
                     </p>
-                    
-                    {/* WIZUALIZACJA ZDJĘĆ W OPINII */}
+
                     {ratingItem.images && ratingItem.images.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-1">
                         {ratingItem.images.map((img, idx) => (
                           <img
                             key={img.id || idx}
-                            // Jeżeli img to po prostu "/uploads/ratings/...", przekaż to bezpośrednio do src
-                            src={typeof img === 'string' ? img : img.url}
+                            src={typeof img === "string" ? img : img.url}
                             alt="Załącznik do opinii"
                             className="w-24 h-24 object-cover rounded-xl border border-neutral-700"
                           />
@@ -304,9 +317,19 @@ export default function SpecialistProfile() {
                 />
               </div>
 
-              
               <div className="flex flex-col gap-2">
-                <span className="text-sm text-neutral-400">Zdjęcia wykonanej pracy (opcjonalnie)</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-neutral-400">
+                    Zdjęcia wykonanej pracy (opcjonalnie)
+                  </span>
+                  <span
+                    className={`text-sm transition-colors ${
+                      isOverLimit ? "text-red-500" : "text-neutral-500"
+                    }`}
+                  >
+                    ({imageCount}/{MAX_IMAGES})
+                  </span>
+                </div>
                 <label className="cursor-pointer border-2 border-dashed border-neutral-700 hover:border-neutral-400 transition rounded-xl p-4 flex flex-col items-center justify-center text-neutral-500 hover:text-neutral-300">
                   <span className="text-sm">Kliknij, aby wybrać pliki</span>
                   <input
@@ -317,10 +340,29 @@ export default function SpecialistProfile() {
                     onChange={handleImageSelect}
                   />
                 </label>
-                {reviewImages.length > 0 && (
+                {isOverLimit && (
+                  <p className="text-red-500 text-sm font-medium">
+                    Możesz dodać maksymalnie {MAX_IMAGES} zdjęć. Usuń{" "}
+                    {imageCount - MAX_IMAGES}{" "}
+                    {imageCount - MAX_IMAGES === 1
+                      ? "zdjęcie"
+                      : imageCount - MAX_IMAGES < 5
+                        ? "zdjęcia"
+                        : "zdjęć"}
+                    , aby kontynuować.
+                  </p>
+                )}
+                {imageCount > 0 && (
                   <div className="grid grid-cols-4 gap-2 mt-2">
-                    {reviewImages.map((img) => (
-                      <div key={img.id} className="relative group aspect-square">
+                    {reviewImages.map((img, idx) => (
+                      <div
+                        key={img.id}
+                        className={`relative group aspect-square ${
+                          idx >= MAX_IMAGES
+                            ? "ring-2 ring-red-500 rounded-lg"
+                            : ""
+                        }`}
+                      >
                         <img
                           src={img.url}
                           alt="Podgląd"
@@ -328,7 +370,11 @@ export default function SpecialistProfile() {
                         />
                         <button
                           type="button"
-                          onClick={() => setReviewImages((prev) => prev.filter((i) => i.id !== img.id))}
+                          onClick={() =>
+                            setReviewImages((prev) =>
+                              prev.filter((i) => i.id !== img.id),
+                            )
+                          }
                           className="absolute top-1 right-1 bg-black/70 hover:bg-red-500 text-white text-xs w-5 h-5 rounded-md flex items-center justify-center transition"
                         >
                           ✕

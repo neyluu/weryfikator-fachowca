@@ -43,6 +43,10 @@ const LIMITS = {
   experience: {
     min: 10,
     max: 100
+  },
+  images: {
+    min: 1,
+    max: 8
   }
 }
 
