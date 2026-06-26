@@ -13,4 +13,6 @@ public interface GeneratedContractRepository
     List<GeneratedContract> findBySpecialistUserOrderByGeneratedAtDesc(
         User user
     );
+    
+    long countByClientUserIdAndSpecialistUserId(Long clientId, Long specialistId);
 }

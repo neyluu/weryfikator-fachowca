@@ -12,4 +12,6 @@ public interface RatingRepository extends JpaRepository<Rating, Long> {
     List<Rating> findBySpecialistIdOrderByCreatedAtDesc(Long specialistId);
 
     Long countBySpecialistId(Long specialistId);
+
+    long countByAuthorIdAndSpecialistId(Long authorId, Long specialistId);
 }

@@ -6,6 +6,7 @@ import org.example.backend.dto.response.RatingResponse;
 import org.example.backend.dto.response.RatingSummaryResponse;
 import org.example.backend.entity.Rating;
 import org.example.backend.entity.RatingImage;
+import org.example.backend.repository.GeneratedContractRepository;
 import org.example.backend.repository.RatingRepository;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,26 @@ import java.util.UUID;
 public class RatingService {
 
     private final RatingRepository ratingRepository;
+    private final ModerationService moderationService;
+    private final GeneratedContractRepository contractRepository;
 
     public void saveRating(RatingRequest request, Long authorId) {
+        long contractsCount = contractRepository.countByClientUserIdAndSpecialistUserId(authorId, request.getSpecialistId()) +
+                              contractRepository.countByClientUserIdAndSpecialistUserId(request.getSpecialistId(), authorId);
+                              
+        if (contractsCount == 0) {
+            throw new IllegalArgumentException("Aby dodać opinię, musisz najpierw zawrzeć umowę z tym użytkownikiem.");
+        }
+
+        long ratingsCount = ratingRepository.countByAuthorIdAndSpecialistId(authorId, request.getSpecialistId());
+        if (ratingsCount >= contractsCount) {
+            throw new IllegalArgumentException("Wykorzystałeś limit opinii. Zewrzyj kolejną umowę, aby móc dodać nową opinię.");
+        }
+
+        if (moderationService.isProfane(request.getComment())) {
+            throw new IllegalArgumentException("Komentarz zawiera nieodpowiednie treści.");
+        }
+
         Rating rating = Rating.builder()
                 .specialistId(request.getSpecialistId())
                 .authorId(authorId)

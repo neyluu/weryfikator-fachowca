@@ -137,7 +137,8 @@ export default function SpecialistProfile() {
       });
 
       if (!res.ok) {
-        throw new Error("Nie udało się dodać opinii. Spróbuj ponownie.");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Nie udało się dodać opinii. Spróbuj ponownie.");
       }
 
       setScores({ quality: 0, price: 0, timeliness: 0 });
@@ -267,7 +268,6 @@ export default function SpecialistProfile() {
                     <p className="text-neutral-400 leading-relaxed">
                       {ratingItem.comment || "Brak komentarza."}
                     </p>
-
                     {ratingItem.images && ratingItem.images.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-1">
                         {ratingItem.images.map((img, idx) => (
