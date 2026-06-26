@@ -497,7 +497,19 @@ function Profile() {
             </div>
 
             <div className="flex flex-col gap-3">
-              <p className="text-gray-600">Portfolio</p>
+              <div className="text-gray-600 flex gap-3">
+                Portfolio
+                <p
+                  className={`${
+                    formData.images.length < LIMITS.images.min ||
+                    formData.images.length > LIMITS.images.max
+                      ? "text-red-500"
+                      : ""
+                  }`}
+                >
+                  ({formData.images.length}/{LIMITS.images.max})
+                </p>
+              </div>
 
               <label
                 className="cursor-pointer border-2 border-dashed
