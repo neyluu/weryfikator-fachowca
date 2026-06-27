@@ -214,7 +214,7 @@ export default function SpecialistProfile() {
           profile: profileData.profile || profileData,
           user: profileData.user || profileData,
         }}
-        contactButton={true}
+        contactButton={!user || String(user.userId) !== id}
         id={id}
       />
       <Section title="Opinie użytkowników">
