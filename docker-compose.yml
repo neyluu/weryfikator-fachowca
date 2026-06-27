@@ -28,6 +28,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JWT_SECRET: ${JWT_SECRET}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      AI_DISABLED: ${AI_DISABLED}
     ports:
       - "8080:8080"
     depends_on:
