@@ -141,80 +141,80 @@ export default function Home() {
       </div>
 
       {/* NAJNOWSZE OPINIE */}
-      <Section title="Najnowsze opinie">
-        <div className="flex flex-col gap-3">
-          <Card className="flex flex-col gap-5">
-            <div className="flex flex-row items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Avatar name="M" />
-                <span className="text-neutral-200 font-medium">
-                  Krzysztof Majewski
-                </span>
-              </div>
+      {/*<Section title="Najnowsze opinie">*/}
+      {/*  <div className="flex flex-col gap-3">*/}
+      {/*    <Card className="flex flex-col gap-5">*/}
+      {/*      <div className="flex flex-row items-center justify-between">*/}
+      {/*        <div className="flex items-center gap-2">*/}
+      {/*          <Avatar name="M" />*/}
+      {/*          <span className="text-neutral-200 font-medium">*/}
+      {/*            Krzysztof Majewski*/}
+      {/*          </span>*/}
+      {/*        </div>*/}
 
-              <Stars value={5} interactive={false} />
-            </div>
+      {/*        <Stars value={5} interactive={false} />*/}
+      {/*      </div>*/}
 
-            <div className="flex flex-col">
-              <p className="mt-2 text-neutral-400">
-                Ekipa Pana Krzysztofa robiła u mnie remont łazienki. Wszystko
-                wykonane bardzo starannie, bez opóźnień i bałaganu. Widać, że
-                znają się na swojej pracy.
-              </p>
+      {/*      <div className="flex flex-col">*/}
+      {/*        <p className="mt-2 text-neutral-400">*/}
+      {/*          Ekipa Pana Krzysztofa robiła u mnie remont łazienki. Wszystko*/}
+      {/*          wykonane bardzo starannie, bez opóźnień i bałaganu. Widać, że*/}
+      {/*          znają się na swojej pracy.*/}
+      {/*        </p>*/}
 
-              <p className="mt-2 text-neutral-500 text-xs">Michał Nowak</p>
-            </div>
-          </Card>
+      {/*        <p className="mt-2 text-neutral-500 text-xs">Michał Nowak</p>*/}
+      {/*      </div>*/}
+      {/*    </Card>*/}
 
-          <Card className="flex flex-col gap-5">
-            <div className="flex flex-row items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Avatar name="A" />
-                <span className="text-neutral-200 font-medium">
-                  Tomasz Zieliński
-                </span>
-              </div>
+      {/*    <Card className="flex flex-col gap-5">*/}
+      {/*      <div className="flex flex-row items-center justify-between">*/}
+      {/*        <div className="flex items-center gap-2">*/}
+      {/*          <Avatar name="A" />*/}
+      {/*          <span className="text-neutral-200 font-medium">*/}
+      {/*            Tomasz Zieliński*/}
+      {/*          </span>*/}
+      {/*        </div>*/}
 
-              <Stars value={3} interactive={false} />
-            </div>
+      {/*        <Stars value={3} interactive={false} />*/}
+      {/*      </div>*/}
 
-            <div className="flex flex-col">
-              <p className="mt-2 text-neutral-400">
-                Zleciłam konfigurację sieci i zabezpieczenie routera. Usługa
-                wykonana poprawnie, ale komunikacja mogłaby być lepsza — czasami
-                trudno było uzyskać szybkie odpowiedzi.
-              </p>
+      {/*      <div className="flex flex-col">*/}
+      {/*        <p className="mt-2 text-neutral-400">*/}
+      {/*          Zleciłam konfigurację sieci i zabezpieczenie routera. Usługa*/}
+      {/*          wykonana poprawnie, ale komunikacja mogłaby być lepsza — czasami*/}
+      {/*          trudno było uzyskać szybkie odpowiedzi.*/}
+      {/*        </p>*/}
 
-              <p className="mt-2 text-neutral-500 text-xs">Anna Wiśniewska</p>
-            </div>
-          </Card>
+      {/*        <p className="mt-2 text-neutral-500 text-xs">Anna Wiśniewska</p>*/}
+      {/*      </div>*/}
+      {/*    </Card>*/}
 
-          <Card className="flex flex-col gap-5">
-            <div className="flex flex-row items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Avatar name="K" />
-                <span className="text-neutral-200 font-medium">
-                  Paweł Krawczyk
-                </span>
-              </div>
+      {/*    <Card className="flex flex-col gap-5">*/}
+      {/*      <div className="flex flex-row items-center justify-between">*/}
+      {/*        <div className="flex items-center gap-2">*/}
+      {/*          <Avatar name="K" />*/}
+      {/*          <span className="text-neutral-200 font-medium">*/}
+      {/*            Paweł Krawczyk*/}
+      {/*          </span>*/}
+      {/*        </div>*/}
 
-              <Stars value={4} interactive={false} />
-            </div>
+      {/*        <Stars value={4} interactive={false} />*/}
+      {/*      </div>*/}
 
-            <div className="flex flex-col">
-              <p className="mt-2 text-neutral-400">
-                Korzystałam z pomocy przy sporządzeniu umowy najmu. Wszystko
-                wyjaśnione jasno i konkretnie, dostałam też dodatkowe wskazówki
-                na przyszłość.
-              </p>
+      {/*      <div className="flex flex-col">*/}
+      {/*        <p className="mt-2 text-neutral-400">*/}
+      {/*          Korzystałam z pomocy przy sporządzeniu umowy najmu. Wszystko*/}
+      {/*          wyjaśnione jasno i konkretnie, dostałam też dodatkowe wskazówki*/}
+      {/*          na przyszłość.*/}
+      {/*        </p>*/}
 
-              <p className="mt-2 text-neutral-500 text-xs">
-                Katarzyna Lewandowska
-              </p>
-            </div>
-          </Card>
-        </div>
-      </Section>
+      {/*        <p className="mt-2 text-neutral-500 text-xs">*/}
+      {/*          Katarzyna Lewandowska*/}
+      {/*        </p>*/}
+      {/*      </div>*/}
+      {/*    </Card>*/}
+      {/*  </div>*/}
+      {/*</Section>*/}
 
       {/* NOWI FACHOWCY */}
       <Section title="Nowi fachowcy">
