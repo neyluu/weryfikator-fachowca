@@ -10,22 +10,31 @@ services:
     depends_on:
       - frontend
       - backend
+    restart: on-failure
 
   backend:
     dns:
       - 8.8.8.8
     build: ./backend
+    command: sh -c "chmod +x mvnw && ./mvnw spring-boot:run"
     container_name: wf-backend
     volumes:
       - ./backend:/app
       - /app/.mvn
+      - ./backend/uploads:/app/uploads
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JWT_SECRET: ${JWT_SECRET}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      AI_DISABLED: ${AI_DISABLED}
+    ports:
+      - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
+    restart: on-failure
 
   db:
     image: postgres:16
@@ -44,7 +53,7 @@ services:
       retries: 5
     volumes:
       - wf_postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+#      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   frontend:
     build: ./frontend
@@ -58,6 +67,7 @@ services:
       CHOKIDAR_USEPOLLING: "true"
     depends_on:
       - backend
+    restart: on-failure
 
 volumes:
   wf_postgres_data:

@@ -1,0 +1,164 @@
+package org.example.backend.controller;
+
+import java.util.List;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.example.backend.dto.request.profile.CreateProfileRequest;
+import org.example.backend.dto.request.profile.ProfileDto;
+import org.example.backend.dto.response.SearchProfileDto;
+import org.example.backend.entity.Profile;
+import org.example.backend.entity.Rating;
+import org.example.backend.entity.User;
+import org.example.backend.repository.ProfileRepository;
+import org.example.backend.repository.RatingRepository;
+import org.example.backend.repository.UserRepository;
+import org.example.backend.service.ProfileService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+@RestController
+@RequestMapping("/profile")
+@RequiredArgsConstructor
+public class ProfileController {
+
+    private final ProfileService profileService = new ProfileService();
+    private final ProfileRepository profileRepository;
+    private final UserRepository userRepository;
+    private final RatingRepository ratingRepository;
+
+    @Transactional(readOnly = true)
+    @GetMapping("/search")
+    public List<SearchProfileDto> search(
+        @RequestParam(required = false, defaultValue = "") String service,
+        @RequestParam(required = false, defaultValue = "") String city
+    ) {
+        return profileRepository
+            .search(service, city)
+            .stream()
+            .map(this::toSearchProfileDto)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    @GetMapping("/newest")
+    public List<SearchProfileDto> newest(
+        @RequestParam(required = false, defaultValue = "3") int limit
+    ) {
+        return profileRepository
+            .findAllByOrderByCreatedAtDesc(PageRequest.of(0, limit))
+            .stream()
+            .map(this::toSearchProfileDto)
+            .toList();
+    }
+
+    private SearchProfileDto toSearchProfileDto(Profile profile) {
+        List<Rating> ratings =
+            ratingRepository.findBySpecialistIdOrderByCreatedAtDesc(
+                profile.getId()
+            );
+        double avg = 0.0;
+
+        if (!ratings.isEmpty()) {
+            double sum = ratings
+                .stream()
+                .mapToDouble(
+                    r ->
+                        (r.getQuality() + r.getPrice() + r.getTimeliness()) /
+                        3.0
+                )
+                .sum();
+            avg = Math.round((sum / ratings.size()) * 10.0) / 10.0;
+        }
+
+        return SearchProfileDto.of(profile, avg);
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<?> create(
+        @RequestBody CreateProfileRequest dto,
+        Authentication auth
+    ) {
+        Long userId = (Long) auth.getPrincipal();
+        User user = userRepository.findById(userId).orElseThrow();
+
+        Profile profile = new Profile();
+        profileService.apply(profile, dto);
+        profileService.applyImages(profile, dto.images());
+        profileService.applyProfilePicture(profile, dto.profilePicture());
+        profile.setUser(user);
+        profileRepository.save(profile);
+
+        return ResponseEntity.ok(Map.of("message", "created"));
+    }
+
+    @PutMapping("/update")
+    @Transactional
+    public ResponseEntity<?> update(
+        @RequestBody CreateProfileRequest dto,
+        Authentication auth
+    ) {
+        Long userId = (Long) auth.getPrincipal();
+        User user = userRepository.findById(userId).orElseThrow();
+
+        Profile profile = profileRepository.findByUser(user).orElseThrow();
+        profileService.apply(profile, dto);
+        profileService.applyImages(profile, dto.images());
+        profileService.applyProfilePicture(profile, dto.profilePicture());
+
+        return ResponseEntity.ok(Map.of("message", "updated"));
+    }
+
+    @Transactional(readOnly = true)
+    @GetMapping("/me")
+    public ProfileDto get(Authentication auth) {
+        Long userId = (Long) auth.getPrincipal();
+        User user = userRepository
+            .findById(userId)
+            .orElseThrow(() ->
+                new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User not found"
+                )
+            );
+
+        Profile profile = profileRepository
+            .findByUser(user)
+            .orElseThrow(() ->
+                new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Profile not found"
+                )
+            );
+
+        return ProfileDto.of(profile);
+    }
+
+    @Transactional(readOnly = true)
+    @GetMapping("/{id}")
+    public ProfileDto getById(@PathVariable Long id) {
+        User user = userRepository
+            .findById(id)
+            .orElseThrow(() ->
+                new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User not found"
+                )
+            );
+
+        Profile profile = profileRepository
+            .findByUser(user)
+            .orElseThrow(() ->
+                new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Profile not found"
+                )
+            );
+
+        return ProfileDto.of(profile);
+    }
+}

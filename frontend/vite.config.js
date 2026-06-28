@@ -9,13 +9,23 @@ export default defineConfig({
       tailwindcss(),
   ],
   server: {
-    host: true,       // Listen on all addresses (0.0.0.0)
-    strictPort: true, // Fail if port 5173 is busy
+    host: true,
+    strictPort: true,
     port: 5173,
-    watch: {
-      usePolling: true, // Fixes hot reload in WSL/Docker
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
+      '/uploads': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      }
     },
-     hmr: {
+    watch: {
+      usePolling: true,
+    },
+    hmr: {
       clientPort: 80,
     }
   }

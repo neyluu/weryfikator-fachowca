@@ -178,3 +178,5 @@ sketch
 
 frontend/.idea
 *lock.json
+
+/backend/uploads
