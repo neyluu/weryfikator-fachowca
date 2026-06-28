@@ -17,9 +17,14 @@ public class ModerationService {
     @Value("${gemini.api.key}")
     private String apiKey;
 
+    @Value("${AI_DISABLED}")
+    private Boolean aiDisabled;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     public boolean isProfane(String text) {
+        if(aiDisabled) return false;
+
         if (text == null || text.trim().isEmpty()) {
             return false;
         }

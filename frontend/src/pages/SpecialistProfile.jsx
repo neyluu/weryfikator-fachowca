@@ -138,7 +138,9 @@ export default function SpecialistProfile() {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Nie udało się dodać opinii. Spróbuj ponownie.");
+        throw new Error(
+          errorData.message || "Nie udało się dodać opinii. Spróbuj ponownie.",
+        );
       }
 
       setScores({ quality: 0, price: 0, timeliness: 0 });
@@ -214,7 +216,7 @@ export default function SpecialistProfile() {
           profile: profileData.profile || profileData,
           user: profileData.user || profileData,
         }}
-        contactButton={true}
+        contactButton={!user || String(user.userId) !== id}
         id={id}
       />
       <Section title="Opinie użytkowników">
@@ -296,7 +298,7 @@ export default function SpecialistProfile() {
             </p>
           </div>
         )}
-        {user ? (
+        {user && Number(user.userId) !== Number(id) ? (
           <Card className="mt-6 flex flex-col gap-4 border-dashed border-2 border-neutral-700/50 bg-neutral-900/20">
             <h3 className="text-lg font-medium text-neutral-100">
               Dodaj opinię
@@ -397,6 +399,10 @@ export default function SpecialistProfile() {
               </div>
             </form>
           </Card>
+        ) : user && Number(user.userId) === Number(id) ? (
+          <div className="mt-6 p-6 text-center border border-neutral-800 rounded-3xl bg-neutral-900/50 flex flex-col items-center gap-3">
+            <p className="text-neutral-400">Nie możesz wystawić oceny sobie.</p>
+          </div>
         ) : (
           <div className="mt-6 p-6 text-center border border-neutral-800 rounded-3xl bg-neutral-900/50 flex flex-col items-center gap-3">
             <p className="text-neutral-400">
